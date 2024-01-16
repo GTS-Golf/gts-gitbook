@@ -1,11 +1,6 @@
 # Table of contents
 
 * [공지사항](README.md)
-  * [GTS A/S 가이드북](undefined/gts-a-s/README.md)
-    * [MNIST 초급](undefined/gts-a-s/index.md)
-    * [MNIST 고급](undefined/gts-a-s/index-1.md)
-    * [텐서플로우 구조](undefined/gts-a-s/index-2.md)
-    * [MNIST 데이터 다운로드](undefined/gts-a-s/index-3.md)
 * [A/S메뉴얼](g3doc/index.md)
 * [PC](g3doc/get\_started/index.md)
   * [다운로드 및 설치](g3doc/get\_started/os\_setup.md)
