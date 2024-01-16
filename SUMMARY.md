@@ -1,7 +1,6 @@
 # Table of contents
 
-* [공지사항](README.md)
-* [A/S메뉴얼](g3doc/index.md)
+* [A/S메뉴얼](README.md)
 * [PC](g3doc/get\_started/index.md)
   * [다운로드 및 설치](g3doc/get\_started/os\_setup.md)
   * [기본적인 사용법](g3doc/get\_started/basic\_usage.md)
