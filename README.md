@@ -8,7 +8,7 @@ GTS에서 제공하는 A/S메뉴얼 페이지 입니다.
 
 깃북의 주소는 https://tensorflowkorea.gitbooks.io/tensorflow-kr 입니다.
 
-자세한  사항은 카카오톡 친구 ([GT S골프)](https://tensorflowkorea.wordpress.com/2016/06/01/%ED%85%90%EC%84%9C%ED%94%8C%EB%A1%9C%EC%9A%B0-%EB%AC%B8%EC%84%9C-%ED%95%9C%EA%B8%80%ED%99%94/)문의하세요.
+자세한  사항은 카카오톡 친구 [( GT S골프)](https://tensorflowkorea.wordpress.com/2016/06/01/%ED%85%90%EC%84%9C%ED%94%8C%EB%A1%9C%EC%9A%B0-%EB%AC%B8%EC%84%9C-%ED%95%9C%EA%B8%80%ED%99%94/)로문의하세요.
 
 감사합니다.
 
