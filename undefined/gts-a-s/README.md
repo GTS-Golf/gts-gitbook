@@ -1,7 +1,7 @@
 ---
 layout:
   title:
-    visible: false
+    visible: true
   description:
     visible: true
   tableOfContents:
@@ -12,5 +12,13 @@ layout:
     visible: false
 ---
 
-# 공지사항
+# GTS A/S 가이드북
+
+안녕하세요. GTS 골프 입니다.
+
+GTS에서 제공하는 A/S 가이드북 페이지 입니다.
+
+
+
+
 
