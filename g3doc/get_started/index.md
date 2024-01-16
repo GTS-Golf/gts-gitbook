@@ -1,4 +1,18 @@
-# 시작하기
+---
+layout:
+  title:
+    visible: false
+  description:
+    visible: false
+  tableOfContents:
+    visible: true
+  outline:
+    visible: true
+  pagination:
+    visible: true
+---
+
+# PC
 
 텐서플로우를 실제로 작동시켜 봅시다!
 
@@ -49,20 +63,15 @@ sess.close()
 
 좀 더 흥미를 돋우기 위해 전형적인 머신러닝 모델이 텐서플로우에서 어떻게 구현되는지 살펴보시면 좋습니다. 뉴럴 네트워크 분야에서 가장 전형적인 문제는 MNIST 손글씨 숫자를 분류하는 것입니다. 우리는 여기서 두가지 버전의 설명 즉 하나는 머신러닝 초보자를 위한 것과 하나는 전문가를 위한 버전을 제공합니다. 만약 다른 소프트웨어 패키지로 MNIST 모델을 여러번 훈련시킨 적이 있다면 붉은 알약을 선택하세요. 만약 MNIST에 대해 들어본 적이 없다면 푸른 알약을 선택하면 됩니다. 초보자와 전문가 사이의 어디라면 푸른색 말고 붉은 알약을 선택하시면 됩니다.
 
-<div style="width:100%; margin:auto; margin-bottom:10px; margin-top:20px; display: flex; flex-direction: row">
- <a href="../tutorials/mnist/beginners/index.md" title="MNIST for ML Beginners tutorial">
-   <img style="flex-grow:1; flex-shrink:1; border: 1px solid black;" src="../images/blue_pill.png" alt="MNIST for machine learning beginners tutorial" />
- </a>
- <a href="../tutorials/mnist/pros/index.md" title="Deep MNIST for ML Experts tutorial">
-   <img style="flex-grow:1; flex-shrink:1; border: 1px solid black;" src="../images/red_pill.png" alt="Deep MNIST for machine learning experts tutorial" />
- </a>
-</div>
-<p style="font-size:10px;">Images licensed CC BY-SA 4.0; original by W. Carter</p>
+[![MNIST for machine learning beginners tutorial](../images/blue\_pill.png) ](../tutorials/mnist/beginners/index.md)[![Deep MNIST for machine learning experts tutorial](../images/red\_pill.png)](../tutorials/mnist/pros/index.md)
+
+Images licensed CC BY-SA 4.0; original by W. Carter
 
 바로 텐서플로우를 설치하고 배우고 싶다면 이 내용은 넘어가고 다음으로 진행해도 됩니다. 텐서플로우 기능을 설명하는 기술적인 튜토리얼에서 MNIST 예제를 또 사용하므로 다시 볼 수 있습니다.
 
 ## Recommended Next Steps
-* [다운로드 및 설치](../get_started/os_setup.md)
-* [기본적인 사용법](../get_started/basic_usage.md)
+
+* [다운로드 및 설치](os\_setup.md)
+* [기본적인 사용법](basic\_usage.md)
 * [텐서플로우 구조](../tutorials/mnist/tf/index.md)
 * [텐서플로우 플레이그라운드](http://playground.tensorflow.org)
