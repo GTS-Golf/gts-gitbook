@@ -12,7 +12,7 @@ layout:
     visible: true
 ---
 
-# 프로젝터
+# 프로그램
 
 ## TensorFlow WhitePaper
 

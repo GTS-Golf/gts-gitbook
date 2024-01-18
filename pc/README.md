@@ -12,9 +12,9 @@ layout:
     visible: false
 ---
 
-# A/S메뉴얼
+# PC
 
-## A/S 가이드
+## PC
 
 
 
