@@ -1,7 +1,7 @@
 # Table of contents
 
 * [공지사항](README.md)
-* [A/S메뉴얼](g3doc/index.md)
+* [A/S 가이드](g3doc/index.md)
 * [PC](pc/README.md)
   * [기본](pc/basic.md)
   * [기가바이트(Gigabyte)](pc/gigabyte/README.md)
