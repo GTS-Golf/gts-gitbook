@@ -14,8 +14,6 @@ layout:
 
 # PC
 
-## [기본PC](./#pc)
+## [기가바이트(Gigabyte)](gigabyte/)
 
-## [기가바이트(Gigabyte)](./#gigabyte)
-
-## [아수스(ASUS)](./#asus)
+## [아수스(ASUS)](asus/)
