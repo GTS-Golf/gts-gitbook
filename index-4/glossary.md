@@ -38,7 +38,7 @@
 
 **Op (operation)**
 
-TensorFlow 런타임에서: `add`나 `matmul` 또는 `concat`과 같은 연산의 타입입니다. [how to add an op](../index-2/index-6.md)에 설명된대로 런타임에 새로운 연산을 추가할 수 있습니다.
+TensorFlow 런타임에서: `add`나 `matmul` 또는 `concat`과 같은 연산의 타입입니다. [how to add an op](broken-reference)에 설명된대로 런타임에 새로운 연산을 추가할 수 있습니다.
 
 파이썬 API에서: 그래프의 노드입니다. 연산은 [`tf.Operation`](../index-3/index/framework.md#Operation) 클래스의 인스턴스로 나타냅니다. `Operation`의 `type` 프로퍼티는 `add`나 `matmul`과 같은 노드에 대한 실행 연산을 나타냅니다.
 

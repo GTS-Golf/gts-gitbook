@@ -138,7 +138,7 @@ with tf.Session() as sess:
 * `"/gpu:0"`: 컴퓨터의 1번째 GPU.
 * `"/gpu:1"`: 컴퓨터의 2번쨰 GPU.
 
-GPU와 TensorFlow에 대한 더 자세한 정보는 [Using GPUs](../../index-2/index-9.md)를 참조하시기 바랍니다.
+GPU와 TensorFlow에 대한 더 자세한 정보는 [Using GPUs](broken-reference)를 참조하시기 바랍니다.
 
 ### 분산된 session에서 graph 실행하기(Launching the graph in a distributed session)
 

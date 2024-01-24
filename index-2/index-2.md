@@ -1,4 +1,4 @@
-# 그래프 시각화
+# ZCAM
 
 (v1.0)
 
@@ -6,7 +6,7 @@ TensorFlow 연산 그래프(computation graph)는 강력하지만 복잡합니�
 
 ![TensorFlow 그래프의 시각화](../g3doc/images/graph\_vis\_animation.gif) _TensorFlow 그래프의 시각화._
 
-그래프를 보려면, TensorBoard를 실행할 때 로그 디렉토리를 입력한 후 상단 그래프 탭을 클릭하고 왼쪽 위 모서리에 있는 메뉴를 통해 적당한 작업을 선택하면 됩니다. TensorBoard를 어떻게 실행하는지와 필요한 정보를 기록하고 있는지 확인하는 방법에 대한 더 많은 정보를 보려면 [TensorBoard: 시각화 학습](index-1.md)를 참고하세요.
+그래프를 보려면, TensorBoard를 실행할 때 로그 디렉토리를 입력한 후 상단 그래프 탭을 클릭하고 왼쪽 위 모서리에 있는 메뉴를 통해 적당한 작업을 선택하면 됩니다. TensorBoard를 어떻게 실행하는지와 필요한 정보를 기록하고 있는지 확인하는 방법에 대한 더 많은 정보를 보려면 [TensorBoard: 시각화 학습](index-3.md)를 참고하세요.
 
 ## 이름 범주화(Name scoping)와 노드
 
@@ -104,7 +104,7 @@ TensorBoard는 그래프의 레이아웃을 바꿀 수 있는 몇 가지 방법�
 
 ## Runtime statistics
 
-실행할 때 총 메모리 사용량, 총 계산 시간, 노드의 tensor 형태와 같은 런타임 메타데이터를 수집하면 보통 도움이 됩니다. 아래의 코드 예제는 [simple MNIST tutorial](../index-1/undefined/index.md)의 수정본 중 훈련과 테스트 부분에서 발췌한 내용으로 요약과 런타임 통계를 기록하는 부분입니다. 요약을 어떻게 기록하는지는 [Summaries Tutorial](index-1.md#serializing-the-data)을 보세요. 전체 소스는 [여기](https://www.tensorflow.org/code/tensorflow/examples/tutorials/mnist/mnist\_with\_summaries.py)에 있습니다.
+실행할 때 총 메모리 사용량, 총 계산 시간, 노드의 tensor 형태와 같은 런타임 메타데이터를 수집하면 보통 도움이 됩니다. 아래의 코드 예제는 [simple MNIST tutorial](../index-1/undefined/index.md)의 수정본 중 훈련과 테스트 부분에서 발췌한 내용으로 요약과 런타임 통계를 기록하는 부분입니다. 요약을 어떻게 기록하는지는 [Summaries Tutorial](index-3.md#serializing-the-data)을 보세요. 전체 소스는 [여기](https://www.tensorflow.org/code/tensorflow/examples/tutorials/mnist/mnist\_with\_summaries.py)에 있습니다.
 
 ```python
   # 모델을 트레이닝하고 또한 요약을 작성합니다.

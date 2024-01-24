@@ -796,7 +796,7 @@ TensorFlow provides several classes and operations that you can use to create va
 
 Gets an existing variable with these parameters or create a new one.
 
-This function prefixes the name with the current variable scope and performs reuse checks. See the [Variable Scope How To](../../index-2/index-10.md) for an extensive description of how reusing works. Here is a basic example:
+This function prefixes the name with the current variable scope and performs reuse checks. See the [Variable Scope How To](broken-reference) for an extensive description of how reusing works. Here is a basic example:
 
 ```python
 with tf.variable_scope("foo"):
@@ -917,7 +917,7 @@ Set regularizer for this scope.
 
 Returns a context for variable scope.
 
-Variable scope allows to create new variables and to share already created ones while providing checks to not create or share by accident. For details, see the [Variable Scope How To](../../index-2/index-10.md), here we present only a few basic examples.
+Variable scope allows to create new variables and to share already created ones while providing checks to not create or share by accident. For details, see the [Variable Scope How To](broken-reference), here we present only a few basic examples.
 
 Simple example of how to create a new variable:
 

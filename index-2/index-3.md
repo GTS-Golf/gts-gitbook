@@ -1,289 +1,146 @@
-# 데이터 로딩
+# 텐서보드
 
-(v1.0)
+(v0.12)
 
-There are three main methods of getting data into a TensorFlow program:
+TensorFlow를 쓸려는 연산은 거대한 심층 신경망 학습처럼 복잡하고 내용이 헷갈리는 것들입니다. 이해, 디버깅, 또 TensorFlow 최적화를 쉽게 만들기 위해서 시각화 도구 세트를 하나 넣어뒀습니다. 바로 TensorBoard입니다. 여러분은 TensorBoard를 이용해서 TensorFlow의 그래프를 시각화하고 그래프를 실행해서 얻은 행렬을 도표로 나타내고 이미지 파일같은 부가 데이터를 보여줄 수도 있습니다. TensorBoard가 완전히 셋팅되면 이렇게 보일 것입니다:
 
-* Feeding: Python code provides the data when running each step.
-* Reading from files: an input pipeline reads the data from files at the beginning of a TensorFlow graph.
-* Preloaded data: a constant or variable in the TensorFlow graph holds all the data (for small data sets).
+![MNIST TensorBoard](../g3doc/images/mnist\_tensorboard.png)
 
-\[TOC]
+이 튜토리얼은 간단한 TensorBoard 사용법을 안내하는 것이 목적입니다. 참고할 만한 다른 문서들도 있어요! [TensorBoard 길라잡이](https://www.tensorflow.org/code/tensorflow/tensorboard/README.md)는 TensorBoard 사용법에 대한 팁이나 디버깅 방법 등 더 많은 정보를 담고 있습니다.
 
-## Feeding
+## 데이터 저장(serialize)
 
-TensorFlow's feed mechanism lets you inject data into any Tensor in a computation graph. A python computation can thus feed data directly into the graph.
+TensorBoard는 TensorFlow를 실행할 때 만들 수 있는 요약 데이터(summary data)가 들어간 TensorFlow 이벤트 파일을 이용합니다. TensorBoard에서 요약 데이터가 보여주는 라이프 사이클을 설명해드리겠습니다.
 
-Supply feed data through the `feed_dict` argument to a run() or eval() call that initiates computation.
+가장 먼저 요약 데이터를 얻고 싶은 TensorFlow 그래프를 만들어야겠죠. 그리고 [summary operations](../index-3/index/train.md#summary-operations)을 이용해서 어느 노드를 기록할 지 결정합니다.
 
-```python
-with tf.Session():
-  input = tf.placeholder(tf.float32)
-  classifier = ...
-  print(classifier.eval(feed_dict={input: my_python_preprocessing_fn()}))
-```
+예를 들어 지금 곱집합 신경망을 학습시켜서 MNIST 숫자들(역자 주: 프로그래밍의 'hello world'처럼 이미지 인식에서 가장 기초적인 예제)을 인식하려고 한다고 해봅시다. 아마도 학습률이 어떻게 달라지는지, 목표함수가 어떻게 바뀌는지를 기록하고 싶을 것입니다. 학습률과 손실을 각각 만들어내는 노드에 [`scalar_summary`](../index-3/index/train.md#scalar\_summary) 작업(op)을 추가해서 데이터를 모을 수 있습니다. 그리고 각 `scalar_summary`에는 `학습률`이나 `손실함수`같은 `태그`를 붙일 수도 있습니다.
 
-While you can replace any Tensor with feed data, including variables and constants, the best practice is to use a [`placeholder` op](../index-3/index/io\_ops.md#placeholder) node. A `placeholder` exists solely to serve as the target of feeds. It is not initialized and contains no data. A placeholder generates an error if it is executed without a feed, so you won't forget to feed it.
+특정 층에서 발생한 액티베이션, 그래디언트 혹은 가중치의 분포를 시각화하고 싶을 것 같기도 합니다. 이럴 때는 그래디언트 결과물이나 가중치 변수에 [`histogram_summary`](../index-3/index/train.md#histogram\_summary) 작업(op)을 추가해서 데이터를 모을 수 있습니다.
 
-An example using `placeholder` and feeding to train on MNIST data can be found in [`tensorflow/examples/tutorials/mnist/fully_connected_feed.py`](https://www.tensorflow.org/code/tensorflow/examples/tutorials/mnist/fully\_connected\_feed.py), and is described in the [MNIST tutorial](../index-1/undefined/index-2.md).
+가능한 모든 요약 작업(summary operation)들은 [summary operations](../index-3/index/train.md#summary-operations) 문서를 확인하시기 바랍니다.
 
-## Reading from files
+TensorFlow의 작업(op)들은 이용자가 그 작업이나 연관된 다른 작업을 실행시킬 때까지 아무 것도 하지 않습니다. 우리가 만든 요약 노드들은 그래프에서 지엽적인 존재입니다. 아무 노드도 요약 노드들의 결과에 영향을 받지 않거든요. 그렇기 때문에 요약 데이터를 만들려면 반드시 모든 요약 노드들을 실행시켜야 합니다. 일일이 손으로 관리하는 것은 짜증나는 일이니까 [`tf.merge_all_summaries`](../index-3/index/train.md#merge\_all\_summaries)를 사용해서 요약 노드들을 하나로 합쳐서 한 번에 모든 요약 데이터를 만들 수 있게 할 수 있습니다.
 
-A typical pipeline for reading records from files has the following stages:
+이제 통합된 요약 작업(summary op)을 실행시키면 모든 요약 데이터를 담은 `Summary` 프로토버퍼 오브젝트를 만들 수 있습니다. 마지막으로 이 요약 데이터를 디스크에 저장하기 위해 프로토버퍼 오브젝트를 [`tf.train.SummaryWriter`](../index-3/index/train.md#SummaryWriter)로 넘겨야 합니다.
 
-1. The list of filenames
-2. _Optional_ filename shuffling
-3. _Optional_ epoch limit
-4. Filename queue
-5. A Reader for the file format
-6. A decoder for a record read by the reader
-7. _Optional_ preprocessing
-8. Example queue
+`SummaryWriter`을 쓰기 위해서는 모든 요약 데이터를 저장할 디렉토리인 logdir을 정해줘야 합니다. `SummaryWriter`는 때에 따라 `그래프`도 이용할 수 있습니다. 만약 `그래프` 오브젝트를 이용하는 경우에는 TensorBoard가 텐서 형태(tensor shape) 정보에 덧붙여서 그래프도 보여줄 것입니다. 시각화된 그래프를 보면 그래프의 플로우에 대해서 더 잘 이해할 수 있겠죠. 자세한 내용은 [Tensor shape information](index-2.md#tensor-shape-information)을 참조하세요.
 
-### Filenames, shuffling, and epoch limits
+드디어 그래프도 수정했고 `SummaryWriter`도 얻었습니다. 네트워크를 실행할 준비가 끝났어요! 원한다면 통합된 요약 작업을 매 단계마다 실행시켜서 엄청난 학습 데이터를 기록할 수 있습니다. 그런데 매 단계마다 저장하면 필요한 것보다 훨씬 많을 거에요. `n` 단계마다 요약 작업을 시키는 것을 고려해봅시다.
 
-For the list of filenames, use either a constant string Tensor (like `["file0", "file1"]` or `[("file%d" % i) for i in range(2)]`) or the [`tf.train.match_filenames_once` function](../index-3/index/io\_ops.md#match\_filenames\_once).
-
-Pass the list of filenames to the [`tf.train.string_input_producer` function](../index-3/index/io\_ops.md#string\_input\_producer). `string_input_producer` creates a FIFO queue for holding the filenames until the reader needs them.
-
-`string_input_producer` has options for shuffling and setting a maximum number of epochs. A queue runner adds the whole list of filenames to the queue once for each epoch, shuffling the filenames within an epoch if `shuffle=True`. This procedure provides a uniform sampling of files, so that examples are not under- or over- sampled relative to each other.
-
-The queue runner works in a thread separate from the reader that pulls filenames from the queue, so the shuffling and enqueuing process does not block the reader.
-
-### File formats
-
-Select the reader that matches your input file format and pass the filename queue to the reader's read method. The read method outputs a key identifying the file and record (useful for debugging if you have some weird records), and a scalar string value. Use one (or more) of the decoder and conversion ops to decode this string into the tensors that make up an example.
-
-#### CSV files
-
-To read text files in [comma-separated value (CSV) format](https://tools.ietf.org/html/rfc4180), use a [`TextLineReader`](../index-3/index/io\_ops.md#TextLineReader) with the [`decode_csv`](../index-3/index/io\_ops.md#decode\_csv) operation. For example:
+아래의 코드 예시는 [초보자를 위한 MNIST](http://tensorflow.org/tutorials/mnist/beginners/index.md)에 매 10단계마다 요약 작업을 하도록 조금 변형한 코드입니다. 이 코드를 실행시키고 `tensorboard --logdir=/tmp/mnist_logs`를 실행하면 학습하는 동안 가중치나 정확도같은 통계값이 어떻게 변했는지 볼 수 있습니다. 아래 코드는 일부를 발췌한 것이니 코드 전체는 [여기](https://www.tensorflow.org/code/tensorflow/examples/tutorials/mnist/mnist\_with\_summaries.py)를 참조하세요.
 
 ```python
-filename_queue = tf.train.string_input_producer(["file0.csv", "file1.csv"])
+def variable_summaries(var, name):
+  """Attach a lot of summaries to a Tensor."""
+  with tf.name_scope('summaries'):
+    mean = tf.reduce_mean(var)
+    tf.scalar_summary('mean/' + name, mean)
+    with tf.name_scope('stddev'):
+      stddev = tf.sqrt(tf.reduce_sum(tf.square(var - mean)))
+    tf.scalar_summary('sttdev/' + name, stddev)
+    tf.scalar_summary('max/' + name, tf.reduce_max(var))
+    tf.scalar_summary('min/' + name, tf.reduce_min(var))
+    tf.histogram_summary(name, var)
 
-reader = tf.TextLineReader()
-key, value = reader.read(filename_queue)
+def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
+  """간단한 신경망 레이어를 만들기 위한 재사용가능 코드
+  
+  행렬곱을 하고 편차(bias)를 더하고 비선형화를 위한 액티베이션 함수로 ReLU
+  (역자 주: Rectified Linear Unit. 자주 유용하게 쓰이는 액티베이션 함수.)를 사용.
+  가독성을 위해 name scoping을 했고 다량의 요약 작업을 추가.
+  """
+  # name scope를 추가하여 그래프의 계층들을 논리적으로 분류  
+  with tf.name_scope(layer_name):
+    # 레이어의 가중치를 저장할 변수    
+    with tf.name_scope('weights'):
+      weights = weight_variable([input_dim, output_dim])
+      variable_summaries(weights, layer_name + '/weights')
+    with tf.name_scope('biases'):
+      biases = bias_variable([output_dim])
+      variable_summaries(biases, layer_name + '/biases')
+    with tf.name_scope('Wx_plus_b'):
+      preactivate = tf.matmul(input_tensor, weights) + biases
+      tf.histogram_summary(layer_name + '/pre_activations', preactivate)
+    activations = act(preactivate, 'activation')
+    tf.histogram_summary(layer_name + '/activations', activations)
+    return activations
 
-# Default values, in case of empty columns. Also specifies the type of the
-# decoded result.
-record_defaults = [[1], [1], [1], [1], [1]]
-col1, col2, col3, col4, col5 = tf.decode_csv(
-    value, record_defaults=record_defaults)
-features = tf.stack([col1, col2, col3, col4])
+hidden1 = nn_layer(x, 784, 500, 'layer1')
 
-with tf.Session() as sess:
-  # Start populating the filename queue.
-  coord = tf.train.Coordinator()
-  threads = tf.train.start_queue_runners(coord=coord)
+with tf.name_scope('dropout'):
+  keep_prob = tf.placeholder(tf.float32)
+  tf.scalar_summary('dropout_keep_probability', keep_prob)
+  dropped = tf.nn.dropout(hidden1, keep_prob)
 
-  for i in range(1200):
-    # Retrieve a single instance:
-    example, label = sess.run([features, col5])
+y = nn_layer(dropped, 500, 10, 'layer2', act=tf.nn.softmax)
 
-  coord.request_stop()
-  coord.join(threads)
+with tf.name_scope('cross_entropy'):
+  diff = y_ * tf.log(y)
+  with tf.name_scope('total'):
+    cross_entropy = -tf.reduce_mean(diff)
+  tf.scalar_summary('cross entropy', cross_entropy)
+
+with tf.name_scope('train'):
+  train_step = tf.train.AdamOptimizer(FLAGS.learning_rate).minimize(
+      cross_entropy)
+
+with tf.name_scope('accuracy'):
+  with tf.name_scope('correct_prediction'):
+    correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+  with tf.name_scope('accuracy'):
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+  tf.scalar_summary('accuracy', accuracy)
+
+# 모든 요약 내용을 합치고 /tmp/mnist_logs에 기록합니다.(기본 경로)
+merged = tf.merge_all_summaries()
+train_writer = tf.train.SummaryWriter(FLAGS.summaries_dir + '/train',
+                                      sess.graph)
+test_writer = tf.train.SummaryWriter(FLAGS.summaries_dir + '/test')
+tf.initialize_all_variables().run()
 ```
 
-Each execution of `read` reads a single line from the file. The `decode_csv` op then parses the result into a list of tensors. The `record_defaults` argument determines the type of the resulting tensors and sets the default value to use if a value is missing in the input string.
-
-You must call `tf.train.start_queue_runners` to populate the queue before you call `run` or `eval` to execute the `read`. Otherwise `read` will block while it waits for filenames from the queue.
-
-#### Fixed length records
-
-To read binary files in which each record is a fixed number of bytes, use [`tf.FixedLengthRecordReader`](../index-3/index/io\_ops.md#FixedLengthRecordReader) with the [`tf.decode_raw`](../index-3/index/io\_ops.md#decode\_raw) operation. The `decode_raw` op converts from a string to a uint8 tensor.
-
-For example, [the CIFAR-10 dataset](http://www.cs.toronto.edu/\~kriz/cifar.html) uses a file format where each record is represented using a fixed number of bytes: 1 byte for the label followed by 3072 bytes of image data. Once you have a uint8 tensor, standard operations can slice out each piece and reformat as needed. For CIFAR-10, you can see how to do the reading and decoding in [`tensorflow_models/tutorials/image/cifar10/cifar10_input.py`](https://www.tensorflow.org/code/tensorflow\_models/tutorials/image/cifar10/cifar10\_input.py) and described in [this tutorial](../index-1/undefined-2/index.md#prepare-the-data).
-
-#### Standard TensorFlow format
-
-Another approach is to convert whatever data you have into a supported format. This approach makes it easier to mix and match data sets and network architectures. The recommended format for TensorFlow is a [TFRecords file](../index-3/index/python\_io.md#tfrecords-format-details) containing [`tf.train.Example` protocol buffers](https://www.tensorflow.org/code/tensorflow/core/example/example.proto) (which contain [`Features`](https://www.tensorflow.org/code/tensorflow/core/example/feature.proto) as a field). You write a little program that gets your data, stuffs it in an `Example` protocol buffer, serializes the protocol buffer to a string, and then writes the string to a TFRecords file using the [`tf.python_io.TFRecordWriter` class](../index-3/index/python\_io.md#TFRecordWriter). For example, [`tensorflow/examples/how_tos/reading_data/convert_to_records.py`](https://www.tensorflow.org/code/tensorflow/examples/how\_tos/reading\_data/convert\_to\_records.py) converts MNIST data to this format.
-
-To read a file of TFRecords, use [`tf.TFRecordReader`](../index-3/index/io\_ops.md#TFRecordReader) with the [`tf.parse_single_example`](../index-3/index/io\_ops.md#parse\_single\_example) decoder. The `parse_single_example` op decodes the example protocol buffers into tensors. An MNIST example using the data produced by `convert_to_records` can be found in [`tensorflow/examples/how_tos/reading_data/fully_connected_reader.py`](https://www.tensorflow.org/code/tensorflow/examples/how\_tos/reading\_data/fully\_connected\_reader.py), which you can compare with the `fully_connected_feed` version.
-
-### Preprocessing
-
-You can then do any preprocessing of these examples you want. This would be any processing that doesn't depend on trainable parameters. Examples include normalization of your data, picking a random slice, adding noise or distortions, etc. See [`tensorflow_models/tutorials/image/cifar10/cifar10.py`](https://www.tensorflow.org/code/tensorflow\_models/tutorials/image/cifar10/cifar10.py) for an example.
-
-### Batching
-
-At the end of the pipeline we use another queue to batch together examples for training, evaluation, or inference. For this we use a queue that randomizes the order of examples, using the [`tf.train.shuffle_batch` function](../index-3/index/io\_ops.md#shuffle\_batch).
-
-Example:
-
-```
-def read_my_file_format(filename_queue):
-  reader = tf.SomeReader()
-  key, record_string = reader.read(filename_queue)
-  example, label = tf.some_decoder(record_string)
-  processed_example = some_processing(example)
-  return processed_example, label
-
-def input_pipeline(filenames, batch_size, num_epochs=None):
-  filename_queue = tf.train.string_input_producer(
-      filenames, num_epochs=num_epochs, shuffle=True)
-  example, label = read_my_file_format(filename_queue)
-  # min_after_dequeue defines how big a buffer we will randomly sample
-  #   from -- bigger means better shuffling but slower start up and more
-  #   memory used.
-  # capacity must be larger than min_after_dequeue and the amount larger
-  #   determines the maximum we will prefetch.  Recommendation:
-  #   min_after_dequeue + (num_threads + a small safety margin) * batch_size
-  min_after_dequeue = 10000
-  capacity = min_after_dequeue + 3 * batch_size
-  example_batch, label_batch = tf.train.shuffle_batch(
-      [example, label], batch_size=batch_size, capacity=capacity,
-      min_after_dequeue=min_after_dequeue)
-  return example_batch, label_batch
-```
-
-If you need more parallelism or shuffling of examples between files, use multiple reader instances using the [`tf.train.shuffle_batch_join` function](../index-3/index/io\_ops.md#shuffle\_batch\_join). For example:
-
-```
-def read_my_file_format(filename_queue):
-  # Same as above
-
-def input_pipeline(filenames, batch_size, read_threads, num_epochs=None):
-  filename_queue = tf.train.string_input_producer(
-      filenames, num_epochs=num_epochs, shuffle=True)
-  example_list = [read_my_file_format(filename_queue)
-                  for _ in range(read_threads)]
-  min_after_dequeue = 10000
-  capacity = min_after_dequeue + 3 * batch_size
-  example_batch, label_batch = tf.train.shuffle_batch_join(
-      example_list, batch_size=batch_size, capacity=capacity,
-      min_after_dequeue=min_after_dequeue)
-  return example_batch, label_batch
-```
-
-You still only use a single filename queue that is shared by all the readers. That way we ensure that the different readers use different files from the same epoch until all the files from the epoch have been started. (It is also usually sufficient to have a single thread filling the filename queue.)
-
-An alternative is to use a single reader via the [`tf.train.shuffle_batch` function](../index-3/index/io\_ops.md#shuffle\_batch) with `num_threads` bigger than 1. This will make it read from a single file at the same time (but faster than with 1 thread), instead of N files at once. This can be important:
-
-* If you have more reading threads than input files, to avoid the risk that you will have two threads reading the same example from the same file near each other.
-* Or if reading N files in parallel causes too many disk seeks.
-
-How many threads do you need? the `tf.train.shuffle_batch*` functions add a summary to the graph that indicates how full the example queue is. If you have enough reading threads, that summary will stay above zero. You can [view your summaries as training progresses using TensorBoard](index-1.md).
-
-### Creating threads to prefetch using `QueueRunner` objects
-
-The short version: many of the `tf.train` functions listed above add [`QueueRunner`](../index-3/index/train.md#QueueRunner) objects to your graph. These require that you call [`tf.train.start_queue_runners`](../index-3/index/train.md#start\_queue\_runners) before running any training or inference steps, or it will hang forever. This will start threads that run the input pipeline, filling the example queue so that the dequeue to get the examples will succeed. This is best combined with a [`tf.train.Coordinator`](../index-3/index/train.md#Coordinator) to cleanly shut down these threads when there are errors. If you set a limit on the number of epochs, that will use an epoch counter that will need to be initialized. The recommended code pattern combining these is:
+`SummaryWriters`를 초기화 시킨 후에는 모델을 학습시키거나 테스트할 때 요약 내용(summary)을 `SummaryWriters`에 추가해야 합니다.
 
 ```python
-# Create the graph, etc.
-init_op = tf.initialize_all_variables()
+# 모델을 학습시키고 요약 내용을 기록해 봅시다.
+# 매 10 단계마다 테스트 세트의 정확도를 측정하고 그 요약 내용을 기록합니다.
+# 매 단계마다 train_step을 실행하고 학습 내용을 추가합니다.
 
-# Create a session for running operations in the Graph.
-sess = tf.Session()
+def feed_dict(train):
+  """TensorFlow feed_dict를 만들기: data를 Tensor 플레이스홀더에 매칭"""
+  if train or FLAGS.fake_data:
+    xs, ys = mnist.train.next_batch(100, fake_data=FLAGS.fake_data)
+    k = FLAGS.dropout
+  else:
+    xs, ys = mnist.test.images, mnist.test.labels
+    k = 1.0
+  return {x: xs, y_: ys, keep_prob: k}
 
-# Initialize the variables (like the epoch counter).
-sess.run(init_op)
-
-# Start input enqueue threads.
-coord = tf.train.Coordinator()
-threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-
-try:
-    while not coord.should_stop():
-        # Run training steps or whatever
-        sess.run(train_op)
-
-except tf.errors.OutOfRangeError:
-    print('Done training -- epoch limit reached')
-finally:
-    # When done, ask the threads to stop.
-    coord.request_stop()
-
-# Wait for threads to finish.
-coord.join(threads)
-sess.close()
+for i in range(FLAGS.max_steps):
+  if i % 10 == 0:  # 요약 내용과 테스트 세트 정확도를 기록합니다.
+    summary, acc = sess.run([merged, accuracy], feed_dict=feed_dict(False))
+    test_writer.add_summary(summary, i)
+    print('Accuracy at step %s: %s' % (i, acc))
+  else:  # 학습한 세트에 대한 요약 내용을 기록하고 학습시킵니다.
+    summary, _ = sess.run([merged, train_step], feed_dict=feed_dict(True))
+    train_writer.add_summary(summary, i)
 ```
 
-#### Aside: What is happening here?
+이제 TensorBoard를 이용해서 이 데이터를 시각화할 준비가 끝났습니다.
 
-First we create the graph. It will have a few pipeline stages that are connected by queues. The first stage will generate filenames to read and enqueue them in the filename queue. The second stage consumes filenames (using a `Reader`), produces examples, and enqueues them in an example queue. Depending on how you have set things up, you may actually have a few independent copies of the second stage, so that you can read from multiple files in parallel. At the end of these stages is an enqueue operation, which enqueues into a queue that the next stage dequeues from. We want to start threads running these enqueuing operations, so that our training loop can dequeue examples from the example queue.
+## TensorBoard 실행
 
-![](../g3doc/images/AnimatedFileQueues.gif)
+TensorBoard를 실행해보기 위해서 아래 명령을 이용해 봅시다.
 
-The helpers in `tf.train` that create these queues and enqueuing operations add a [`tf.train.QueueRunner`](../index-3/index/train.md#QueueRunner) to the graph using the [`tf.train.add_queue_runner`](../index-3/index/train.md#add\_queue\_runner) function. Each `QueueRunner` is responsible for one stage, and holds the list of enqueue operations that need to be run in threads. Once the graph is constructed, the [`tf.train.start_queue_runners`](../index-3/index/train.md#start\_queue\_runners) function asks each QueueRunner in the graph to start its threads running the enqueuing operations.
-
-If all goes well, you can now run your training steps and the queues will be filled by the background threads. If you have set an epoch limit, at some point an attempt to dequeue examples will get an [`tf.OutOfRangeError`](../index-3/index/client.md#OutOfRangeError). This is the TensorFlow equivalent of "end of file" (EOF) -- this means the epoch limit has been reached and no more examples are available.
-
-The last ingredient is the [`Coordinator`](../index-3/index/train.md#Coordinator). This is responsible for letting all the threads know if anything has signalled a shut down. Most commonly this would be because an exception was raised, for example one of the threads got an error when running some operation (or an ordinary Python exception).
-
-For more about threading, queues, QueueRunners, and Coordinators [see here](index-4.md).
-
-#### Aside: How clean shut-down when limiting epochs works
-
-Imagine you have a model that has set a limit on the number of epochs to train on. That means that the thread generating filenames will only run that many times before generating an `OutOfRange` error. The QueueRunner will catch that error, close the filename queue, and exit the thread. Closing the queue does two things:
-
-* Any future attempt to enqueue in the filename queue will generate an error. At this point there shouldn't be any threads trying to do that, but this is helpful when queues are closed due to other errors.
-* Any current or future dequeue will either succeed (if there are enough elements left) or fail (with an `OutOfRange` error) immediately. They won't block waiting for more elements to be enqueued, since by the previous point that can't happen.
-
-The point is that when the filename queue is closed, there will likely still be many filenames in that queue, so the next stage of the pipeline (with the reader and other preprocessing) may continue running for some time. Once the filename queue is exhausted, though, the next attempt to dequeue a filename (e.g. from a reader that has finished with the file it was working on) will trigger an `OutOfRange` error. In this case, though, you might have multiple threads associated with a single QueueRunner. If this isn't the last thread in the QueueRunner, the `OutOfRange` error just causes the one thread to exit. This allows the other threads, which are still finishing up their last file, to proceed until they finish as well. (Assuming you are using a [`tf.train.Coordinator`](../index-3/index/train.md#Coordinator), other types of errors will cause all the threads to stop.) Once all the reader threads hit the `OutOfRange` error, only then does the next queue, the example queue, gets closed.
-
-Again, the example queue will have some elements queued, so training will continue until those are exhausted. If the example queue is a [`RandomShuffleQueue`](../index-3/index/io\_ops.md#RandomShuffleQueue), say because you are using `shuffle_batch` or `shuffle_batch_join`, it normally will avoid ever going having fewer than its `min_after_dequeue` attr elements buffered. However, once the queue is closed that restriction will be lifted and the queue will eventually empty. At that point the actual training threads, when they try and dequeue from example queue, will start getting `OutOfRange` errors and exiting. Once all the training threads are done, [`tf.train.Coordinator.join`](../index-3/index/train.md#Coordinator.join) will return and you can exit cleanly.
-
-### Filtering records or producing multiple examples per record
-
-Instead of examples with shapes `[x, y, z]`, you will produce a batch of examples with shape `[batch, x, y, z]`. The batch size can be 0 if you want to filter this record out (maybe it is in a hold-out set?), or bigger than 1 if you are producing multiple examples per record. Then simply set `enqueue_many=True` when calling one of the batching functions (such as `shuffle_batch` or `shuffle_batch_join`).
-
-### Sparse input data
-
-SparseTensors don't play well with queues. If you use SparseTensors you have to decode the string records using [`tf.parse_example`](../index-3/index/io\_ops.md#parse\_example) **after** batching (instead of using `tf.parse_single_example` before batching).
-
-## Preloaded data
-
-This is only used for small data sets that can be loaded entirely in memory. There are two approaches:
-
-* Store the data in a constant.
-* Store the data in a variable, that you initialize and then never change.
-
-Using a constant is a bit simpler, but uses more memory (since the constant is stored inline in the graph data structure, which may be duplicated a few times).
-
-```python
-training_data = ...
-training_labels = ...
-with tf.Session():
-  input_data = tf.constant(training_data)
-  input_labels = tf.constant(training_labels)
-  ...
+```bash
+tensorboard --logdir=path/to/log-directory
 ```
 
-To instead use a variable, you need to also initialize it after the graph has been built.
+`logdir`은 데이터를 `SummaryWriter`가 데이터를 저장(serialize)해놓은 디렉토리를 가리킵니다. 만약 `logdir` 디렉토리에 다른 실행에 대한 데이터를 저장해놓은 하위 디렉토리가 있다면 TensorBoard는 모두 다 시각화해서 보여줄 것입니다. 한 번 TensorBoard가 실행되면 웹브라우저 주소창에 `localhost:6006`을 입력해서 볼 수 있습니다.
 
-```python
-training_data = ...
-training_labels = ...
-with tf.Session() as sess:
-  data_initializer = tf.placeholder(dtype=training_data.dtype,
-                                    shape=training_data.shape)
-  label_initializer = tf.placeholder(dtype=training_labels.dtype,
-                                     shape=training_labels.shape)
-  input_data = tf.Variable(data_initializer, trainable=False, collections=[])
-  input_labels = tf.Variable(label_initializer, trainable=False, collections=[])
-  ...
-  sess.run(input_data.initializer,
-           feed_dict={data_initializer: training_data})
-  sess.run(input_labels.initializer,
-           feed_dict={label_initializer: training_labels})
-```
+TensorBoard 화면 오른쪽 상단에서 네비게이션 탭을 찾을 수 있습니다. 각 탭들은 저장된 데이터 세트를 의미합니다.
 
-Setting `trainable=False` keeps the variable out of the `GraphKeys.TRAINABLE_VARIABLES` collection in the graph, so we won't try and update it when training. Setting `collections=[]` keeps the variable out of the `GraphKeys.VARIABLES` collection used for saving and restoring checkpoints.
+그래프를 시각화하는 _그래프 탭_에 대한 더 자세한 정보는 [TensorBoard: 그래프 시각화](index-2.md)를 참조하시기 바랍니다.
 
-Either way, [`tf.train.slice_input_producer function`](../index-3/index/io\_ops.md#slice\_input\_producer) can be used to produce a slice at a time. This shuffles the examples across an entire epoch, so further shuffling when batching is undesirable. So instead of using the `shuffle_batch` functions, we use the plain [`tf.train.batch` function](../index-3/index/io\_ops.md#batch). To use multiple preprocessing threads, set the `num_threads` parameter to a number bigger than 1.
-
-An MNIST example that preloads the data using constants can be found in [`tensorflow/examples/how_tos/reading_data/fully_connected_preloaded.py`](https://www.tensorflow.org/code/tensorflow/examples/how\_tos/reading\_data/fully\_connected\_preloaded.py), and one that preloads the data using variables can be found in [`tensorflow/examples/how_tos/reading_data/fully_connected_preloaded_var.py`](https://www.tensorflow.org/code/tensorflow/examples/how\_tos/reading\_data/fully\_connected\_preloaded\_var.py), You can compare these with the `fully_connected_feed` and `fully_connected_reader` versions above.
-
-## Multiple input pipelines
-
-Commonly you will want to train on one dataset and evaluate (or "eval") on another. One way to do this is to actually have two separate processes:
-
-* The training process reads training input data and periodically writes checkpoint files with all the trained variables.
-* The evaluation process restores the checkpoint files into an inference model that reads validation input data.
-
-This is what is done in [the example CIFAR-10 model](../index-1/undefined-2/index.md#save-and-restore-checkpoints). This has a couple of benefits:
-
-* The eval is performed on a single snapshot of the trained variables.
-* You can perform the eval even after training has completed and exited.
-
-You can have the train and eval in the same graph in the same process, and share their trained variables. See [the shared variables tutorial](index-10.md).
+TensorBoard에 대한 전반적인 정보를 더 얻고 싶으시면 [TensorBoard 길라잡이](../tensorboard/)를 참조해 주세요.

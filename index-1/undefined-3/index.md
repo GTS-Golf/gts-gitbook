@@ -1,58 +1,251 @@
-# word2vec 모델
+# 콘볼루션 뉴럴 네트워크
 
-(v1.0)
+> **NOTE:** 이 튜토리얼은 텐서플로우에 _능숙한_ 사용자를 대상으로 하며, 기계학습에 대한 전문 지식과 경험을 갖고 있다는 전제로 쓰였습니다.
 
-이 튜토리얼에서 [Mikolov et al.](http://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf) 의 word2vec 모델을 살펴본다. 이 모델은 "word embeddings" 라 불리는 단어들의 벡터 표현 학습에 사용된다.
+## 개요
 
-## 강조점(Highlights)
+CIFAR-10 분류는 기계학습에서 흔히 사용되는 벤치마크 문제입니다. 이 분류 문제는 RGB 32x32 픽셀 이미지를 다음의 10개 카테고리로 분류하는 것이 목표입니다 : `비행기, 자동차, 새, 고양이, 사슴, 개, 개구리, 말, 배, 트럭.`
 
-이 튜토리얼은 TensorFlow 에서 word2vec 모델을 만드는 흥미롭고 실질적인 부분들을 강조할 예정이다.
+더 자세한 설명을 원하신다면 [CIFAR-10 페이지](http://www.cs.toronto.edu/\~kriz/cifar.html)와 Alex Krizhevsky의 [기술 보고서](http://www.cs.toronto.edu/\~kriz/learning-features-2009-TR.pdf)를 참조하세요.
 
-* 왜 단어들을 벡터들로 표현해야 하는지에 대한 동기부여를 주는 것에서 시작한다.
-* 모델 넘어의 직관력과 이것이 어떻게 학습되어지는지(정확한 측정을 위한 수학 사용과 함께) 알아본다.
-* 또한 TensorFlow 에서 모델의 간단한 구현을 보인다.
-* 마지막으로, 초기 버전 수준을 더 잘 만들수 있는 방법을 알아본다.
+### 목표
 
-이후에 튜토리얼에서는 코드를 보여줄 것이나, 좀 더 자세히 알고 싶다면 [tensorflow/examples/tutorials/word2vec/word2vec\_basic.py](https://www.tensorflow.org/code/tensorflow/examples/tutorials/word2vec/word2vec\_basic.py) 의 최소화된 구현을 참고하자. 이 기본 예제는 특정 데이터를 다운로드 하기 위해 필요한 코드, 이것을 약간 학습하기 위한 코드, 그리고 결과를 시각화하기 위하 코드를 포함한다. 기본 버전을 읽고 실행하는데 익숙해지면, 쓰레드를 이용하여 어떻게 효율적으로 데이터를 텍스트 모델로 이동시키는지, 학습하는 동안 어떻게 체크하는지 등에 대한 좀 더 심화된 TensorFlow 원리들을 보여주는 심화 구현된 [tensorflow\_models/tutorials/embedding/word2vec.py](https://www.tensorflow.org/code/tensorflow\_models/tutorials/embedding/word2vec.py) 을 시작할 수 있다.
+이 튜토리얼의 목표는 이미지를 인식하는 상대적으로 작은 \[컨볼루셔널 뉴럴 네트워크]를 만드는 것입니다. 이 과정에서, 튜토리얼에서는
 
-하지만 우선, 전반부에 왜 word embeddings 를 배워야 하는지 살펴보자. 자신이 Embedding 을 잘 알고 자세한 설명들이 혼란스럽다고 생각하면 이 부분을 넘어가도 된다.
+1. 네트워크 구조와 학습 및 평가의 표준적인 구성에 주목하고,
+2. 더 크고 복잡한 모델에 대한 예제를 제공합니다.
 
-## 동기부여 : 왜 Word Embeddings 를 배워야하지?
+CIFAR-10 분류가 선택된 이유는 더 큰 모델을 다루는 데에 필요한 텐서플로우의 많은 기능들을 연습하기에 충분히 복잡하기 때문입니다. 그와 동시에, 충분히 작은 모델이기 때문에 학습이 빨라 새로운 아이디어를 적용해보거나 새로운 테크닉을 실험해보기에 적합하기 때문입니다.
 
-이미지, 오디오 처리 시스템들은 이미지 데이터에 대하여 개별의 가공되지 않은 픽셀-강도값의 벡터들이나 오디오 데이터에 대한 파워스펙트럴밀도계수로 기록된 대량, 고차원 dataset 들과 함께 한다. 객체나 연설 인식과 같은 문제에서 문제를 성공적으로 수행하기 위해 필요한 모든 정보는 데이터로 저장된다는 것을 알고있다(사람은 이러한 문제를 가공되지 않은 데이터로부터 수행하기 때문이다). 그러나 자연어 처리 시스템들은 일반적으로 이산 원자 기호들(discrete atomic symbols)의 단어들로 다룬다. 따라서 'cat' 은 'Id537'로, 'dog' 은 'Id143'로 표현될 수 있다. 이 저장된 것들은 임의적이며, 개별 심볼들(symbols) 간에 존재하는 관계에 관해 시스템과는 의미없는 정보를 제공한다. 이것은 'dogs' 라는 처리 데이터일 때 'cats' 을 배우는 것이 영향력이 매우 적음을 의미한다.(이들 모두 동물, 네 다리, 애완동물, 등) 유일하고 이산의(discrete) id 들로 단어들을 표현하는 것은 데이터를 더욱 드문드문(sparsity) 하게 만들고, 대체적으로 통계적 모델들을 성공적으로 학습하기 위해 더 많은 데이터가 필요함을 의미한다. 벡터 표현들을 사용하는 것은 다음과 같은 장애들을 해결할 수 있다.
+### 튜토리얼의 주안점
 
-![](../../g3doc/images/audio-image-text.png)
+CIFAR-10 튜토리얼은 텐서플로우로 더 크고 복잡한 모델을 디자인하기 위한 몇몇의 주요 구성들을 설명합니다.
 
-[벡터공간 모델(Vector space models)](https://en.wikipedia.org/wiki/Vector\_space\_model) (VSMs) 은 의미상 유사한 단어들은 가까운 지점으로 매핑되어지는(서로 가깝게 의미하는) 연속된 벡터 공간의 단어들로 표현(내포)한다. VSMs 은 NLP 에서 오래되고 깊은 역사를 가지고 있지만, 모든 방법들은 [Distributional Hypothesis](https://en.wikipedia.org/wiki/Distributional\_semantics#Distributional\_Hypothesis) 의 특정 방법이나 다른 방법에 따른다. 그리고 이 논문은 같은 맥락에서 나타나는 단어들은 시멘틱(semantic) 의미를 공유한다고 설명한다. 이 원리에 영향을 주는 다른 접근법들은 두 범주로 나눠진다: _count-based methods_ (e.g.[Latent Semantic Analysis](https://en.wikipedia.org/wiki/Latent\_semantic\_analysis)) 와 _predictive methods_ (e.g.[neural probabilistic language models](http://www.scholarpedia.org/article/Neural\_net\_language\_models)).
+* 주요 수학적 요소 : [Convolution](../../index-3/index/nn.md#conv2d) ([wiki](https://en.wikipedia.org/wiki/Convolution)), [rectified linear activations](../../index-3/index/nn.md#relu) ([wiki](https://en.wikipedia.org/wiki/Rectifier\_\(neural\_networks\))), [Max Pooling](../../index-3/index/nn.md#max\_pool) ([wiki](https://en.wikipedia.org/wiki/Convolutional\_neural\_network#Pooling\_layer)) and [local response normalization](../../index-3/index/nn.md#local\_response\_normalization) (Chapter 3.3 in [AlexNet paper](http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf)).
+* 활성화(Activations)와 경사(gradients)의 손실(loss) 및 분포와 입력된 이미지를 포함하는 학습 중인 네트워크의 활동 [시각화](../../index-2/index-3.md)
+* 학습된 변수의 [이동 평균(moving average)](../../index-3/index/train.md#ExponentialMovingAverage)을 계산하는 방법과 평가를 할 때 예측 성능을 향상시키기 위하여 이 평균들을 이용하는 방법
+* 체계적으로 시간에 따라 감소하는 [학습 비율(learning rate) 스케쥴](../../index-3/index/train.md#exponential\_decay)의 구현
+* 디스크 지연과 비싼 이미지 전처리를 모델로부터 분리하기 위한 입력 데이터 [큐](../../index-3/index/io\_ops.md#shuffle\_batch)의 선인출(prefetching)
 
-이 차이는 [Baroni et al.](http://clic.cimec.unitn.it/marco/publications/acl2014/baroni-etal-countpredict-acl2014.pdf) 에 의해 더 자세하게 설명되어 있다. 간략하게 말해: Count-based methods 는 큰 텍스트 말뭉치에서 특정 단어가 그 주변 단어들과 함께 얼마나 자주 나타나는지에 대한 통계를 계산한다, 그리고 이 count-statistics 를 각각의 단어에 대해 작고 dense 벡터로 상세히 묘사한다. 예측 모델(Predictive models) 은 학습된 작고, dense _embedding vectors_ (모델의 파라미터들로 고려된) 에 관해 직접적으로 단어를 그 주변 단어들로부터 예측하려 한다.
+또한 저희는 모델의 [다중-GPU 버전](index.md#training-a-model-using-multiple-gpu-cards)을 제공합니다. 이 모델은 다음과 같은 사항들을 설명합니다:
 
-Word2vec 는 특히 가공하지 않은 텍스트로부터 학습한 단어 embeddings 에 대해 계산적으로 효율적인 예측 모델이다. 이는 두 가지 종류로 나타난다, Continuous Bag-of-Word(CBOW) 모델과 Skip-Gram 모델([Mikolov et al.](http://arxiv.org/pdf/1301.3781.pdf) 의 Chapter 3.1과 3.2). 알고리즘적으로, 이들 모델들은 CBOW 는 원본 컨텍스트 단어들('the cat sits on the') 로부터 타켓 단어들(e.g. 'mat') 을 예측하는 반면 skip-gram 은 타겟 단어들로부터 원본 컨텍스트 단어들을 역으로 예측한다는 점을 제외하고 유사하다. 이 정반대는 임의적인 선택인 것 처럼 보이지만, 통계적으로 CBOW 는 많은 수의 분포상 정보를 바로잡는 효과를 가진다(전체 컨텍스트를 하나의 관찰로 처리함으로써). 대부분의 경우, 이러한 점은 작은 datasets 일 수록 유용한 것으로 밝혀졌다. 하지만 skip-gram 은 각 컨텍스트-타겟 쌍을 새로운 발견으로 처리하고, 이것은 큰 규모의 datasets 을 가질 때 더 잘 동작하는 경향이 있다. 이 튜토리얼의 나머지는 skip-gram 모델에 초점을 맞출 것이다.
+* 다수의 GPU 카드에서 병렬로 훈련할 모델을 구성하기
+* 다수의 GPU 간에 변수들을 공유하고 업데이트하기
 
-## Noise-Contrastive 학습을 이용한 규모확장
+우리는 이 튜토리얼이 TensorFlow로 영상(vision) 작업에 필요한 큰 CNN을 구축하기 위한 시발점이 되었으면 합니다.
 
-신경 확률 언어 모델들(Neural probabilistic language models) 은 일반적으로 [_softmax_ function](https://en.wikipedia.org/wiki/Softmax\_function) 에 대해 이전에 주어진 단어들 \\(h\\) (for "history") 에서 다음 단어(\\(w\_t\\)(for "target") 에 대한 확률을 최대화하는 [maximum likelihood](https://en.wikipedia.org/wiki/Maximum\_likelihood) (ML) 원리를 이용하여 학습되어 진다.
+### 모델 구조
 
-$$
-\begin{align} P(w_t | h) &= \text{softmax}(\text{score}(w_t, h)) \\ &= \frac{\exp \{ \text{score}(w_t, h) \} } {\sum_\text{Word w' in Vocab} \exp \{ \text{score}(w', h) \} } \end{align}
-$$
+CIFAR-10 튜토리얼의 모델은 컨볼루션과 비선형이 교차되어있는 다중 레이어 구조로 구성되어 있습니다. 이 레이어들 뒤로는 Softmax 분류기로 이어지는 Fully connected layer가 있습니다. 상위 몇몇 레이어를 제외하고, 이 모델은 [Alex Krizhevsky](https://code.google.com/p/cuda-convnet/)가 만든 모델을 따르고 있습니다.
 
-\\(\text{score}(w\_t, h)\\) 은 컨텍스트와 함께 하는 단어의 호환성을 계산한다(일반적으로 내적이 사용된다). 우리는 학습하는 set 에서 이것의 [log-likelihood](https://en.wikipedia.org/wiki/Likelihood\_function) 를 최대화 함으로써 모델을 학습한다. 즉 최대화 하도록.
+이 모델은 GPU에서 몇시간의 학습을 거친 후 최대 86%의 정확도를 달성하였습니다. 좀더 자세한 사항은 [아래](index.md#evaluating-a-model)와 코드를 참조하세요. 이 모델은 1,068,298개의 학습 가능한 매개변수로 구성되어 있으며, 단일 이미지를 추론하는 데에 19.5M의 곱셉-덧셈 연산이 필요합니다.
 
-$$
-\begin{align} J_\text{ML} &= \log P(w_t | h) \\ &= \text{score}(w_t, h) - \log \left( \sum_\text{Word w' in Vocab} \exp \{ \text{score}(w', h) \} \right). \end{align}
-$$
+## 코드 구성
 
-이것은 언어 모델링에 대해서 적절하게 정규화된 확률 모델을 만들어 낸다. 하지만 이 방법은, 매 학습 스텝(_at every training step_), 현재 컨텍스트 \\(h\\) 에서 다른 모든\\(V\\) words \\(w'\\) 에 대한 범위를 이용한 각 확률을 계산하고 정규화하는 것이 필요하기 때문에 그 비용이 매우 비싸다.
+이 튜토리얼의 코드는 [`tensorflow/models/image/cifar10/`](https://www.tensorflow.org/code/tensorflow/models/image/cifar10/) 에 있습니다.
 
-![](../../g3doc/images/softmax-nplm.png)
+| 파일                                                                                                                            | 목적                              |
+| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| [`cifar10_input.py`](https://www.tensorflow.org/code/tensorflow/models/image/cifar10/cifar10\_input.py)                       | CIFAR-10 바이너리 파일 포맷을 읽어들입니다.    |
+| [`cifar10.py`](https://www.tensorflow.org/code/tensorflow/models/image/cifar10/cifar10.py)                                    | CIFAR-10 모델을 만듭니다.              |
+| [`cifar10_train.py`](https://www.tensorflow.org/code/tensorflow/models/image/cifar10/cifar10\_train.py)                       | CIFAR-10 모델을 CPU 혹은 GPU로 학습합니다. |
+| [`cifar10_multi_gpu_train.py`](https://www.tensorflow.org/code/tensorflow/models/image/cifar10/cifar10\_multi\_gpu\_train.py) | CIFAR-10 모델을 다중 GPU로 학습합니다.     |
+| [`cifar10_eval.py`](https://www.tensorflow.org/code/tensorflow/models/image/cifar10/cifar10\_eval.py)                         | CIFAR-10 모델의 예측 성능을 평가합니다.      |
 
-반면, word2vec 의 feature 학습에 대하여 완전 확률 모델(a full probabilistic model) 을 필요로 하지 않는다. 대신 CBOW 와 skip-gram 모델은, 같은 컨텍스트 내에서, 실제 타겟 단어들 \\(w\_t\\) 을 가상(노이즈) 단어들 \\(\tilde w\\) 로부터 구별해 내기 위한 이진 분류 목적함수 ([logistic regression](https://en.wikipedia.org/wiki/Logistic\_regression)) 를 이용하여 학습되어 진다. CBOW 모델에 대한 것은 아래에 도식화하였다. skip-gram 에 대해 방향이 단순히 반대로 되어 있다.
+## CIFAR-10 모델
 
-![](../../g3doc/images/nce-nplm.png)
+CIFAR-10 네트워크는 주로 ['cifar10.py'](https://www.tensorflow.org/code/tensorflow/models/image/cifar10/cifar10.py)에 들어있습니다. 전체 훈련 그래프는 약 765개의 연산을 포함합니다. 우리는 아래의 모듈들로 그래프를 구성하는 것이 가장 재사용성이 높은 코드를 만드는 방법임을 알게 되었습니다:
 
-수학적으로, 목적함수(각 예제에 대해) 는 이를 최대화 한다.
+1. [**모델 입력:**](index.md#model-inputs) 'inputs()' 와 'distorted\_inputs()'는 각각 평가와 훈련을 위한 CIFAR 이미지를 읽고 전처리를 하는 연산들을 추가합니다.
+2. [**모델 예측:**](index.md#model-prediction) 'inference()'는 추론을 수행하는 연산들을 추가합니다. 예) 제공된 이미지에 대한 분류
+3. [**모델 훈련:**](index.md#model-training) 'loss()'와 'train()'은 손실(loss)과 경사(gradients), 변수 업데이트와 시각화 요약을 계산하는 연산들을 추가합니다.
 
-$$$
-k \mathop{\mathbb{E}}_{\tilde w \sim P_\text{noise}} \left[ \log Q_\theta(D = 0 |\tilde w, h) \right]$$ \\(Q_\theta(D=1 | w, h)\\) 은 학습된 embedding vectors \\(\theta\\) 에 대해 계산된 dataset\\(D\\) 내 컨텍스트\\(h\\) 에서 보여지는 단어 (\\(w\\) 의 모델에 대해서 이진 로지스틱 회귀 확률인 조건이다. 실제로 노이즈 분포로부터 대조되는 단어는 찾아냄으로써 기대값을 가늠한다 (즉, [Monte Carlo average](https://en.wikipedia.org/wiki/Monte_Carlo_integration) 를 계산한다). 이 목적함수는 모델이 실제 단어들에 높은 확률을 할당하고 노이즈 단어들에 낮은 확률을 할당할 때 최대화된다. 기술적으로, 이를 [Negative Sampling](http://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf) 이라 명하며, 이 손실(loss) 함수 사용에 대해 수학적으로 유리한 동기가 존재한다: 제시되는 업데이트들은 제한된 softmax 함수의 업데이트들을 근사값을 계산한다. 하지만 손실 함수의 계산을 우리가 선택한 *noise words*(\\(k\\)) 의 갯수, 어휘(\\(V\\)) 내 모든 단어(*all words*) 가 아닌, 만으로 변경하여 계산한다는 점 때문에 계산적으로 특히 매력적이다. 이것은 학습을 더욱 빠르게 만든다. 우리는 [noise-contrastive estimation (NCE)](http://papers.nips.cc/paper/5165-learning-word-embeddings-efficiently-with-noise-contrastive-estimation.pdf) 손실(loss) 와 매우 유사한 것, TensorFlow 가 가지고 있는 유용한 헬퍼 함수 `tf.nn.nce_loss()`, 를 활용할 것이다. 이제 실제로 어떻게 동작하는지에 직관적으로 이해해보자. ## Skip-gram 모델 예제로, dataset 을 생각해보자 `the quick brown fox jumped over the lazy dog` 우선 단어들과 컨택스트들 자신들이 존재하는 dataset 을 만든다. 우리는 여러 타당한 방법으로 'context' 를 정의할 수 있고, 사실 사람들은 타겟의 좌측 단어, 타겟의 우측 단어 등을 통해 통사적 문맥(즉, 현재 타겟 단어의 통사적 의존성, 참고 [Levy et al.](https://levyomer.files.wordpress.com/2014/04/dependency-based-word-embeddings-acl-2014.pdf)) 을 살펴보게 된다. 이제부터, 평범한 정의와 연관지어보고 타겟 단어의 좌측과 우측의 단어들의 윈도우로 'context' 를 정의해보자. 크기 1 의 윈도우를 이용하면, `(context, target)` 쌍의 dataset 을 가지게 된다. `([the, brown], quick), ([quick, fox], brown), ([brown, jumped], fox), ...` skip-gram 은 컨텍스트들과 타겟들의 관계를 도치하고, 이들 타겟 단어로부터 각 컨텍스트 단어의 예측을 시도한다는 점을 상기하자. 그래서 문제는 'quick' 으로부터 'the' 와 'brown' 을, 'brown' 으로부터 'quick' 과 'fox' 등을 예측하는 것이 된다. 따라서 우리의 dataset 은 `(input, output)` 쌍의 dataset 이 된다. `(quick, the), (quick, brown), (brown, quick), (brown, fox), ...` 목적함수는 전체 dataset 에 대해 정의 되지만, 일반적으로 한번에 한 예를 이용한 [stochastic gradient descent](https://en.wikipedia.org/wiki/Stochastic_gradient_descent)(SGD) 로 목적함수를 최적화 한다(또는 일반적으로 `16 <= batch_size <= 512` 인 `batch_size` 예제들의 'minibatch'). 그럼 이 과정의 한 단계를 살펴보자. `quick` 에서 `the` 를 예측하는 것이 목표인 조건에서 우리가 관찰한 위 첫 학습 케이스의 학습 단계\\(t\\) 를 상상해보자. 우리는 특정 노이즈 분포, 일반적으로 unigram 분포 \\(P(w)\\), 로부터 이끌어 낸 noisy (contrastive) 예제들의 `num_noise` 값을 선택했다. 간단하게, noisy 예제에서 `num_noise=1` 이라하고, `sheep` 을 선택한다. 이어서 이 관찰된 쌍과 noisy 예제들의 loss 를 계산한다, 즉 time step \\(t\\) 에서 목적함수는 아래와 같이 된다. $$J^{(t)}_\text{NEG} = \log Q_\theta(D=1 | \text{the, quick}) + \log(Q_\theta(D=0 | \text{sheep, quick}))$$ 목표는 이 목적 함수를 향상시키기 위한(여기서는 최대화) embedding parameters \\(\theta\\) 를 업데이트 시키는 것이다. 이는 embedding parameters \\(\theta\\) 에 대해서 loss 의 gradient 를 미분함으로써 수행한다, 즉 \\(\frac{\partial}{\partial \theta} J_\text{NEG}\\) (다행히 TensorFlow 는 이를 위해 쉬운 헬퍼 함수들을 제공한다!). 다음으로 gradient 방향으로 조금 진행하여 얻은 embeddings 의 업데이트를 수행한다. 전체 학습 set 에 걸처 이 과정을 반복할 때, 모델이 실제 단어들를 노이즈 단어들로부터 구별하는 것을 성공적으로 할 때까지 각 단어들에 대한 embedding 벡터들을 'moving' 하는 효과를 가진다. 예를 들어 [t-SNE dimensionality reduction technique](http://lvdmaaten.github.io/tsne/) 와 같은 이용으로 학습된 벡터들을 2차원으로 투영하여 이들을 시각화 할 수 있다. 이들 시각화된 정보들을 살펴보면, 벡터들이 단어들과 그들과 다른 나머지들과의 관계에 대한 일반적이고, 사실 꽤 유용하고, 시멘틱(의미론적인, semantic) 정보를 담는다는 것을 분명히 할 수 있다. 유도된 벡터 공간에서의 특정 방향성은 특정 시멘틱 관계로 특징화되어 연결된다는 우리의 첫 발견은 매우 흥미로웠다, 즉 *male-femal*, *gender*, 그리고 심지어 *country-capital* 단어들 간의 관계, 아래 그림에 도식화하였다(예제 참고, [Mikolov et al., 2013](http://www.aclweb.org/anthology/N13-1090)). <div style="width:100%; margin:auto; margin-bottom:10px; margin-top:20px;"> <img style="width:100%" src="../../images/linear-relationships.png" alt> </div> 이것은 품사(part-of-speech) tagging 이나 개체명 인식과 같은 여러 고전 NLP 예측 문제들에 대해 이들 벡터들이 왜 유용한 features 인지 설명한다(원저작물인 [Collobert et al., 2011](http://arxiv.org/abs/1103.0398)([pdf](http://arxiv.org/pdf/1103.0398.pdf)) 예제를 참고하거나 후속 연구인 [Turian et al., 2010](http://www.aclweb.org/anthology/P10-1040) 을 참고하자). 이제 이들을 이용해서 멋진 그림들을 그려보자! ## Graph 구성하기 이것은 embeddings 에 대한 모든 것이다. 그럼 우리의 embedding 매트릭스를 정의해보자. 이것은 시작하기 위한 랜덤 매트릭스일 뿐이다. 우리는 이 유닛 큐브의 값이 균일하도록 초기화 할 것이다. ```python embeddings = tf.Variable( tf.random_uniform([vocabulary_size, embedding_size], -1.0, 1.0)) ``` noise-contrastive estimation loss 는 로지스틱 회귀 모델에 관하여 정의 되어진다. 이를 위해, 어휘(vocabulary) 의 각 단어에 대한 가중치(weights)와 편향(biases) 을 정의할 필요가 있다(`input embeddings` 와 대조되어 `output weights` 라 불린다). 그럼 정의해보자. ```python nce_weights = tf.Variable( tf.truncated_normal([vocabulary_size, embedding_size], stddev=1.0 / math.sqrt(embedding_size))) nce_biases = tf.Variable(tf.zeros([vocabulary_size])) ``` 파라미터들이 준비되었고, 이제 우리의 skip-gram 모델 그래프를 정의할 수 있다. 간단하게, 우리의 텍스트 말뭉치(corpus) 를 어휘(vocabulary)로 미리 정수화했다 가정하자. 그럼 각 단어는 정수로 표현되어 진다(자세한 사항은 다음을 참고하자, [tensorflow/examples/tutorials/word2vec/word2vec_basic.py](https://www.tensorflow.org/code/tensorflow/examples/tutorials/word2vec/word2vec_basic.py)). skip-gram 모델은 두 입력을 가진다. 하나는 원본 컨텍스트 단어들을 대표하는 정수들의 집합이고, 다른 하나는 타겟 단어들이다. 이들 입력들에 대한 placeholder 노드들을 만들어 보자. 그래야 나중에 데이터를 입력할 수 있다. ```python # Placeholders for inputs train_inputs = tf.placeholder(tf.int32, shape=[batch_size]) train_labels = tf.placeholder(tf.int32, shape=[batch_size, 1]) ``` 이제 필요한 것은 집단(batch) 안의 각 원본 단어들에 대한 벡터를 살펴보는 것이다. TensorFlow 는 이를 쉽게 해주는 편리한 헬퍼들을 가지고 있다. ```python embed = tf.nn.embedding_lookup(embeddings, train_inputs) ``` 좋다, 이제 각 단어에 대한 embeddings 을 만들었고, noise-contrastive 학습 목적함수를 이용한 타겟 단어 예측을 시도를 해보자. ```python # 매번 음수 라벨링 된 셈플을 이용한 NCE loss 계산 loss = tf.reduce_mean( tf.nn.nce_loss(nce_weights, nce_biases, embed, train_labels, num_sampled, vocabulary_size)) ``` loss 노드를 만들었고, 이제 gradients 를 계산하고 파라미터들을 업데이트 하는 등에 필요한 노드들을 추가할 필요가 있다. 이를 위해 stochastic gradient descent 를 사용할 것이다. 그리고 TensorFlow 는 이를 매우 쉽게 만들어주는 편리한 헬퍼들을 가지고 있다. ```python # SGD optimizer 를 사용 optimizer = tf.train.GradientDescentOptimizer(learning_rate=1.0).minimize(loss) ``` ## 모델 학습하기 모델을 학습하는 것은 데이터를 placeholders 에 넣기 위해 `feed_dict` 를 사용하는 것 만큼 간단하며 루프 내에서 새로운 데이터와 함께 [`session.run`](../../api_docs/python/client.md#Session.run) 를 불러 함수를 사용할 수 있다. ```python for inputs, labels in generate_batch(...): feed_dict = {training_inputs: inputs, training_labels: labels} _, cur_loss = session.run([optimizer, loss], feed_dict=feed_dict) ``` 전체 예제 코드는 [tensorflow/examples/tutorials/word2vec/word2vec_basic.py](https://www.tensorflow.org/code/tensorflow/examples/tutorials/word2vec/word2vec_basic.py) 을 살펴보자. ## 학습한 Embeddings 시각화하기 학습이 완료된 후 t-SNE 를 사용하여 학습한 embeddings 를 시각화 할 수 있다. <div style="width:100%; margin:auto; margin-bottom:10px; margin-top:20px;"> <img style="width:100%" src="../../images/tsne.png" alt> </div> 이제 다 됐어! 예상한 것 처럼 비슷한 단어들은 결국 서로 가까운 집단화(clustering) 된다. TensorFlow 의 더욱 진보된 features 를 보여주는 비중있는 word2vec 구현을 위해서, [tensorflow_models/tutorials/embedding/word2vec.py](https://www.tensorflow.org/code/tensorflow_models/tutorials/embedding/word2vec.py) 을 참고하자. ## Embeddings 평가하기 : 유추(Analogical Reasoning) Embeddings 는 NLP 의 다양한 예측 문제에 대해 유용하다. 완전 품사 모델이나 개체명 모델의 학습을 제외하고, embeddings 를 평가하는 한가지 간단한 방법은 이들을 직접 사용하여 `king is to queen as father is to ?` 와 같이 구문론적인 그리고 의미론적인 관계를 예측하는 것이다. 이 방법을 유추(*analogical reasoning*) 이라고 부르며 [Mikolov and colleagues](http://msr-waypoint.com/en-us/um/people/gzweig/Pubs/NAACL2013Regularities.pdf) 에 의해 소개되었고, dataset 은 여기에서 다운로드 할 수 있다: https://word2vec.googlecode.com/svn/trunk/questions-words.txt. 어떻게 이 평가를 수행하는 알기 위해선, [tensorflow_models/tutorials/embedding/word2vec.py](https://www.tensorflow.org/code/tensorflow_models/tutorials/embedding/word2vec.py) 의 `build_eval_graph()` 와 `eval()` 함수를 살펴봐라. hyperparameters 의 선정은 이 문제의 정확도에 매우 큰 영향을 줄 수 있다. 이 문제에 대해 최고의 성과를 달성하기 위해선 매우 큰 dataset 을 학습하는 것, hyperparameters 에 대한 신중한 조절, 그리고 데이터의 이단추출과 같은 기법을 이용하는 것이 필요하다. 그리고 이 기법들은 이 튜토리얼의 범위를 넘어가는 것이다. ## 구현 최적화하기 우리의 평범한 구현은 TensorFlow 이 다루기 쉬움을의 보여준다. 예를들어 학습 목적함수의 변화는 `tf.nn.nce_loss()` 을 `tf.nn.sampled_softmax_loss()` 와 같은 대체 함수로 교체하는 것 만큼 간단하다. loss 함수에 대해 새로운 아이디어가 있다면, TensorFlow 내에서 새로운 목적함수에 대해 직접 고쳐 표현할 수 있으며 최적화 도구로 이것의 미분을 계산할 수 있다. 여러 다른 아이디어를 시도하거나 빠르게 반복할 경우, 이러한 용이성은 머신 러닝 모델 개발의 탐색 단계에서 매우 가치가 있다. 만족할 만한 모델 구조를 가지고 있다면, 당신의 구현을 더 효율적으로 실행하기 위해(그리고 적은 시간에 더 많은 데이터를 다룰수 있게 하기 위해) 최적화할 가치가 있을 수 있다. 예를 들어, 우리가 이 튜토리얼에서 사용한 간단한 코드는 데이터 아이템들을 읽고 대입하는데 --이들 각각은 TensorFlow back-end 에서 매우 적게 고려된다-- Python 을 사용하기 때문에 절충된 속도로 수행된다. 만일 당신의 모델이 입력 데이터에 대해 심각한 병목현상을 격는 것을 발견한다면, [New Data Formats](../../how_tos/new_data_formats/index.md) 에 설명된 것과 처럼, 수정된 데이터 리더(reader) 를 구현할 수 있을 것이다. Skip-gram 모델링의 경우, [tensorflow_models/tutorials/embedding/word2vec.py](https://www.tensorflow.org/code/tensorflow_models/tutorials/embedding/word2vec.py) 의 예제와 같이 이미 다루었다. 당신의 모델이 입출력 바운드 뿐만아니라 더 높은 성능을 원한다면, [Adding a New Op](../../how_tos/adding_an_op/index.md) 에 설명된 것처럼, 당신의 TensorFlow Ops 작성을 통해 자세한 설명을 할 수 있다. 이것에 대한 Skip-Gram 예제는 [tensorflow_models/tutorials/embedding/word2vec_optimized.py](https://www.tensorflow.org/code/tensorflow_models/tutorials/embedding/word2vec_optimized.py) 에 제시했다. 각 단계의 성능 향상 측정을 위해 각각에 대해 자유롭게 벤치마크 해보자. ## 결론 이 튜토리얼에서 word embeddings 학습에 대해 계산적으로 효율적인 모델인, word2vec 모델을 다뤘다. 우리는 왜 embeddings 가 유용한지 동기부여를 했고, 효율적인 학습 기술들에 대한 논의했으며, TensorFlow 에서 이 모든 것들을 어떻게 구현하는지 보였다. 종합하면, 이것들은 어떻게 TensorFlow 가 초기 실험에 필요한 용이성을 제공하고, 나중에 개인 맞춤의 최적화된 구현에 필요한 조작을 하는지 보여주기를 바란다.
-$$$
+### 모델 입력
+
+모델의 입력 부분은 CIFAR-10 바이너리 데이터 파일로부터 이미지를 읽는 'inputs()'와 'distorted\_inputs()' 로 구성되어 있습니다. 이 데이터 파일들은 고정 바이트 길이 레코드를 담고있어, 우리는 [`tf.FixedLengthRecordReader`](../../index-3/index/io\_ops.md#FixedLengthRecordReader)를 사용합니다. 'Reader' 클래스가 어떻게 작동하는지 더 알고 싶으시다면 [Reading Data](../../index-2/index-4.md#reading-from-files)를 참조하세요.
+
+이미지들은 아래의 과정을 통하여 처리됩니다.
+
+* 이미지는 24 x 24 픽셀로 잘라냅니다. 훈련을 위하여 [무작위로](../../index-3/index/constant\_op.md#random\_crop) 잘라내거나 혹은 평가를 위하여 중심만 잘라냅니다.
+* 동적 범위 내에 모델이 둔감해지도록 [대략적인 화이트닝](../../index-3/index/image.md#per\_image\_whitening)을 합니다
+
+훈련을 위하여 추가적으로 일련의 무작위 왜곡을 적용하여 인공적으로 데이터 셋의 크기를 키웁니다:
+
+* 이미지를 좌에서 우로 [무작위로 뒤집기](../../index-3/index/image.md#random\_flip\_left\_right)
+* [이미지 밝기](../../index-3/index/image.md#random\_brightness)를 무작위로 왜곡하기
+* [이미지 대비](../../index-3/index/image.md#random\_contrast)를 무작위로 왜곡하기
+
+가능한 왜곡의 목록은 [Images](../../index-3/index/image.md) 페이지를 참조하세요. 또한 [`image_summary`](../../index-3/index/train.md#image\_summary)를 이미지에 붙여 [TensorBoard](../../index-2/index-3.md)에서 시각화 할 수 있도록 하였습니다. 이는 입력이 제대로 만들어 졌는지 확인하기 위한 좋은 연습이 될 것 입니다.
+
+![](../../g3doc/images/cifar\_image\_summary.png)
+
+디스크에서 이미지를 읽고 왜곡을 하는 것은 적지 않은 양의 처리 시간이 필요할 수 있습니다. 이러한 작업이 훈련을 늦추는 것을 방지하기 위해, 우리는 이 작업을 16개의 독립된 스레드로 나누어 실행시킵니다. 이 스레드는 TensorFlow [큐](../../index-3/index/io\_ops.md#shuffle\_batch)를 계속해서 채웁니다.
+
+### 모델 예측
+
+모델의 예측 부분은 'inference()' 함수로 구성되어 있습니다. 이 함수는 예측의 \*로짓(logit)\*들을 계산하는 연산을 추가합니다. 모델의 해당 부분은 다음과 같이 구성되어 있습니다:
+
+| 레이어 명            | 설명                                                                                                                          |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `conv1`          | [컨볼루션(convolution)](../../index-3/index/nn.md#conv2d) 과 [정류된 선형(rectified linear)](../../index-3/index/nn.md#relu) 활성화 레이어. |
+| `pool1`          | [최대 풀링(max pooling)](../../index-3/index/nn.md#max\_pool) 레이어.                                                              |
+| `norm1`          | [지역 반응 정규화(local response normalization)](../../index-3/index/nn.md#local\_response\_normalization) 레이어.                    |
+| `conv2`          | [컨볼루션(convolution)](../../index-3/index/nn.md#conv2d) 과 [정류된 선형(rectified linear)](../../index-3/index/nn.md#relu) 활성화 레이어. |
+| `norm2`          | [지역 반응 정규화(local response normalization)](../../index-3/index/nn.md#local\_response\_normalization).                        |
+| `pool2`          | [최대 풀링(max pooling)](../../index-3/index/nn.md#max\_pool) 레이어.                                                              |
+| `local3`         | [정류된 선형 활성화가 포함된 완전 연결 레이어(fully connected layer with rectified linear activation)](../../index-3/index/nn.md).             |
+| `local4`         | [정류된 선형 활성화가 포함된 완전 연결 레이어(fully connected layer with rectified linear activation)](../../index-3/index/nn.md).             |
+| `softmax_linear` | 로짓(logit)들을 생산하는 선형 변환(linear transformation)                                                                               |
+
+아래의 그래프는 TensorBoard를 통해 생성된 추론(inference) 연산을 설명합니다.
+
+![](../../g3doc/images/cifar\_graph.png)
+
+> **연습**: '추론(inference)'의 출력값은 정규화되지 않은 로짓(logit)입니다. [`tf.nn.softmax()`](../../index-3/index/nn.md#softmax)을 사용하여 정규화된 예측값을 리턴하도록 네트워크 구조를 수정해보세요.
+
+'inputs()'와 'inference()' 함수는 모델을 평가하는데 필요한 모든 컴포넌트들을 제공합니다. 이제 우리는 모델을 훈련하는 작업을 구축하는 것으로 초점을 옮겨봅시다.
+
+> **연습:** 'inference()'의 모델 구조는 [cuda-convnet](https://code.google.com/p/cuda-convnet/) 에서 명시하는 CIFAR-10 모델과 조금 다릅니다. 특히, Alex의 원본 모델의 최상위 레이어는 완전 연결(fully connected)이 아니라 국소 연결(locally connected) 되어있습니다. 최상위 레이어에서 국소 연결(locally connected) 구조를 정확하게 재현하도록 구조를 수정해보세요.
+
+### 모델 훈련
+
+N-way 분류를 수행하는 네트워크를 훈련시키는 일반적인 방법은 \*소프트맥스 회귀(Softmax regression)\*로 알려진 [다항 로지스틱 회귀(multinomial logistic regression)](https://en.wikipedia.org/wiki/Multinomial\_logistic\_regression)입니다. 소프트맥스 회귀(Softmax regression)는 네트워크의 출력값에 [softmax](../../index-3/index/nn.md#softmax) 비선형성을 적용하고, 정규화된 예측값과 [1-핫 인코딩(1-hot encoding)](../../index-3/index/sparse\_ops.md#sparse\_to\_dense)된 라벨 사시의 [크로스 엔트로피(cross-entropy)](../../index-3/index/nn.md#softmax\_cross\_entropy\_with\_logits)를 계산합니다. 균일화(regularization)를 위하여, 우리는 모든 학습된 변수에 대하여 일반적인 [가중치 감소(weight decay)](../../index-3/index/nn.md#l2\_loss) 손실을 적용합니다. 모델의 목적함수는 크로스 엔트로피 손실의 합과 'loss()' 함수에 의해 리턴되는, 모든 가중치 감소(weight decay) 텀의 합입니다.
+
+우리는 TensorBoard의 [`scalar_summary`](../../index-3/index/train.md#scalar\_summary)를 사용하여 이를 시각화 하였습니다.
+
+![CIFAR-10 손실(loss)](../../g3doc/images/cifar\_loss.png)
+
+우리는 표준적인 [경사 강하(gradient descent)](https://en.wikipedia.org/wiki/Gradient\_descent) 알고리즘 (다른 방법을 보려면 [Training](../../index-3/index/train.md)을 참조)을 사용하여 모델을 훈련합니다. 시간에 따라 [급격하게 감소(exponentially decays)](../../index-3/index/train.md#exponential\_decay)하는 학습 비율(learning rate)을 사용하였습니다.
+
+![CIFAR-10 Learning Rate Decay](../../g3doc/images/cifar\_lr\_decay.png)
+
+'train()' 함수는 경사(gradient)를 계산하고 학습된 변수를 업데이트함으로써 목표를 최소화 하는데에 필요한 기능을 추가합니다 ( 자세한 사항은 [`GradientDescentOptimizer`](../../index-3/index/train.md#GradientDescentOptimizer) 참조). 이 함수는 하나의 이미지 배치(batch)에 대하여 모델을 훈련하고 업데이트 하는데 필요한 모든 연산을 실행하는 기능을 리턴해줍니다.
+
+## 모델 실행 및 훈련 해보기
+
+모델을 만들었으니, 이제 이 모델을 실행해보고 `cifar10_train.py` 스크립트를 사용하여 훈련 작업을 실행해봅시다.
+
+```shell
+python cifar10_train.py  
+```
+
+> **참고:** 여러분이 CIFAR-10 튜토리얼에서 처음 어떤 타겟을 실행하면, CIFAR-10 데이터셋이 자동으로 다운로드 됩니다. 데이터셋은 160MB 이하 입니다. 아마 그동안 당신은 커피 한 잔이 떠오를 지도 모릅니다.
+
+출력을 보아야 합니다:
+
+```shell
+Filling queue with 20000 CIFAR images before starting to train. This will take a few minutes.
+2015-11-04 11:45:45.927302: step 0, loss = 4.68 (2.0 examples/sec; 64.221 sec/batch)
+2015-11-04 11:45:49.133065: step 10, loss = 4.66 (533.8 examples/sec; 0.240 sec/batch)
+2015-11-04 11:45:51.397710: step 20, loss = 4.64 (597.4 examples/sec; 0.214 sec/batch)
+2015-11-04 11:45:54.446850: step 30, loss = 4.62 (391.0 examples/sec; 0.327 sec/batch)
+2015-11-04 11:45:57.152676: step 40, loss = 4.61 (430.2 examples/sec; 0.298 sec/batch)
+2015-11-04 11:46:00.437717: step 50, loss = 4.59 (406.4 examples/sec; 0.315 sec/batch)
+...
+```
+
+스크립트는 매 10단계마다 총 손실(total loss) 뿐만 아니라 데이터의 마지막 배치가 처리될 때의 처리속도도 보고합니다. 몇 가지 조언:
+
+* 데이터의 첫 배치는 전처리 스레드가 20,000장의 처리된 CIFAR 이미지를 셔플링(shuffling) 큐에 채워넣는 만큼 지나치게 느릴 수 있습니다 (예를 들어, 수 분).
+* 보고된 손실은 가장 최근 배치의 평균 손실입니다. 이 손실은 크로스 엔트로피의 합과 모든 가중치 감소(weight decay) 텀의 합임을 기억하세요.
+* 배치 하나의 처리속도에 주목하세요. 위의 수치는 Tesla K40c로 얻은 값입니다. CPU에서 실행한다면, 좀더 느린 성능을 보일 것 입니다.
+
+> **연습:** 실험할 때, 훈련의 첫 스텝이 오랜 시간이 소요되는 것이 때때로 짜증날 수 있습니다. 초기에 큐를 채우는 이미지의 수를 줄여보세요. `cifar10.py`에서 `NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN`을 검색해보세요.
+
+`cifar10_train.py`는 주기적으로 모든 모델 파라미터를 [체크포인트 파일(checkpoint files)](../../index-2/index.md#saving-and-restoring)에 [저장](../../index-3/index/state\_ops.md#Saver)합니다. 하지만 모델 자체를 평가하지는 _않습니다_. 체크포인트 파일은 `cifar10_eval.py`에서 예측 성능을 측정하는데에 사용됩니다.(아래에 있는 [모델을 평가하기](index.md#evaluating-a-model)를 보세요).
+
+이전 단계들을 모두 따라왔다면, 당신은 CIFAR-10 모델의 훈련을 시작한 것입니다! [축하합니다!](https://www.youtube.com/watch?v=9bZkp7q19f0)
+
+`cifar10_train.py`에서 리턴되는 terminal 텍스트는 모델을 어떻게 훈련할 것인지에 대한 최소한의 통찰(insight)을 제공합니다. 우리는 훈련하는 동안 모델에 대한 더욱 많은 통찰(insight)을 원합니다:
+
+* 손실(loss)이 _정말_ 감소하는지 혹은 단지 노이즈였는지?
+* 모델이 적절한 이미지를 제공받는지?
+* 경사(gradients), 활성화(activations), 그리고 가중치(weights)는 합당한지?
+* 현재의 학습 비울(learning rate)는 무엇인지?
+
+[TensorBoard](../../index-2/index-3.md) 는 기능적으로, `cifar10_train.py`의 [`SummaryWriter`](../../index-3/index/train.md#SummaryWriter)를 통해 주기적으로 데이터를 추출하여 표시합니다.
+
+예를 들어, 우리는 훈련하는 동안 활성화(activation)의 분포와, `local3` feature들의 희박함(sparsity)의 분포가 어떻게 진화(evolve) 하는지 볼 수 있습니다:
+
+![](../../g3doc/images/cifar\_sparsity.png) ![](../../g3doc/images/cifar\_activations.png)
+
+총 손실(total loss)뿐만 아니라, 개별적인 손실 함수(loss function) 들은 특히 시간 경과에 따라 흥미롭습니다. 그러나, 손실(loss)은 훈련에 사용되는 작은 배치 사이즈에 따라 상당히 많은 양의 노이즈를 나타냅니다. 이 연습에서 우리는 원본 값에 더하여 그들의 이동 평균을 시각화하는데 매우 유용함을 발견하였습니다. 이러한 목적을 위하여 어떻게 스크립트가 [`ExponentialMovingAverage`](../../index-3/index/train.md#ExponentialMovingAverage)를 사용하는지 보세요.
+
+## 모델 평가하기
+
+이제 남아있는 데이터 셋에 대하여 학습된 모델이 얼마나 잘 작동하는지 평가해봅시다. 모델은 `cifar10_eval.py` 스크립트에 의해 평가됩니다. 이 스크립트는 `inference()` 함수로 모델을 구축하고 CIFAR-10 평가 데이터셋에 있는 10,000장의 이미지를 사용하여 _1에서의 정밀도(Precision at 1)_:가장 높은 예측값이 이미지의 실제 라벨과 얼마나 자주 일치 하는지를 계산합니다.
+
+훈련하는 동안 모델이 어떻게 개선되는지 추적하기 위하여, `cifar10_train.py`가 생성하는 최근의 체크포인트 파일에서 평가 스크립트가 주기적으로 실행됩니다.
+
+```shell
+python cifar10_eval.py
+```
+
+> 같은 GPU에서 평가와 훈련 바이너리를 실행하지 않도록 주의하세요. 아마 메모리가 부족할 것입니다. 분리된 GPU에서 각각 실행하거나 같은 GPU에서 평가를 하는 동안에는 훈련을 잠시 중단하는 것을 고려하세요.
+
+아래와 같은 결과를 보게 됩니다.
+
+```shell
+2015-11-06 08:30:44.391206: precision @ 1 = 0.860
+...
+```
+
+스크립트는 주기적으로 오직 정밀도@1(precision@1)을 리턴합니다 -- 이 경우에는 86%의 정확도를 리턴하였습니다. 또한 `cifar10_eval.py`는 TensorBoard에서 시각화를 해볼 수 있는 요약(summaries)을 내보냅니다. 이 요약들은 평가를 하는 동안 모델에 대한 추가적인 이해를 제공합니다.
+
+훈련 스크립트는 모든 학습된 변수의 [이동평균(moving average)](../../index-3/index/train.md#ExponentialMovingAverage) 버전을 계산합니다. 평가 스크립트는 모든 학습된 모델 파라미터를 이동 평균 버전으로 치환합니다. 이 치환은 평가시 모델 성능을 향상시킵니다.
+
+> **연습:** 평균 파라미터를 사용하는 것은 예측 성능을 정밀도 @ 1(precision @ 1)에서 약 3%정도 향상시킬 수 있습니다. `cifar10_eval.py`를 수정하여 평균 파라미터를 사용하지 않도록 해보고 예측 성능이 떨어지는 것을 확인해보세요.
+
+## 다중 GPU 카드를 사용하여 모델 훈련하기
+
+최신 워크스테이션은 과학적인 계산을 위하여 다수의 GPU를 갖추고 있습니다. TensorFlow는 이러한 환경을 이용하여 다수의 GPU 카드에서 동시에 훈련 연산을 실행할 수 있습니다.
+
+병렬로 모델을 훈련하려면, 훈련 과정을 분산된 방식으로 조직할 필요가 있습니다. 다음에 나오는 _모델 복제본_ 이라는 용어는 데이터의 하위 집합으로 훈련한 모델의 복사본 중의 하나입니다.
+
+단순하게 비동기(asynchronous) 모델 파라미터 업데이트를 적용하면 최선의 값에 비해 조금 떨어지는 차선의 훈련 성능을 얻을 수 있습니다. 독립된 모델 복제본은 오래된 모델 파라미터의 복사본으로 학습되어 있기 때문입니다. 반대로, 완전한 동기(synchronous) 업데이트의 경우는 가장 느린 모델 복제본 만큼 느릴 것 입니다.
+
+다수의 GPU 카드를 갖춘 워크스테이션에서, 각각의 GPU는 비슷한 속도와 CIFAR-10 모델 전체를 실행할 만한 충분한 메모리를 탑재하고 있을 것입니다. 그러므로, 우리는 우리의 훈련 시스템을 디자인 하는데에 아래와 같은 규칙을 따릅니다:
+
+* 각각의 GPU에 개별의 모델 복제본을 올립니다.
+* 모든 GPU가 한 배치의 데이터를 처리 완료 할때까지 기다려 모델 파라미터 업데이트를 동기적으로 수행합니다.
+
+이 모델의 다이어그램은 다음과 같습니다.
+
+![](../../g3doc/images/Parallelism.png)
+
+각각의 GPU는 추론(inference)뿐만 아니라 경사(gradients)도 독자적인 데이터 배치를 사용하여 계산한다는 것에 주의하세요. 이러한 설정은 GPU간의 더 큰 데이터 배치를 효과적으로 분배 할 수 있도록 해줍니다.
+
+이러한 설정은 모든 GPU들이 모델 파라미터를 공유해야 합니다. GPU간의 데이터 전송이 꽤 느린 작업이라는 사실은 잘 알려져 있습니다. 이러한 이유로, 우리는 모든 모델 파라미터를 CPU 위에 저장하고 업데이트 하기로 정하였습니다(위의 그림에서 녹색 박스). 모든 GPU에서 새로운 데이터 배치가 처리 되고 난 뒤 갓 생성된 모델 파라미터의 집합은 각각의 GPU로 전송됩니다.
+
+GPU들은 연산에 동기화되어있습니다. 모든 경사(gradients)를 GPU들로부터 축적하여 평균을 구합니다(녹색 박스를 보세요). 모델 파라미터는 모든 모델 복제본들의 경사(gradients)의 평균을 사용하여 업데이트됩니다.
+
+### 장치에 변수와 연산 배치시키기
+
+장치에 변수와 연산을 배치시키는 것은 조금 특별한 추상화(abstraction)가 필요합니다.
+
+우리에게 필요한 첫번째 추상화는 단일 모델 복제본에 대한 추론(inference)과 경사(gradients)를 계산하기 위한 함수입니다. 코드에서 우리는 이 추상화를 "타워"라는 용어로 부릅니다. 우리는 각각의 타워에 두가지 속성을 설정해야 합니다:
+
+* 타워 안의 모든 연산들에 대한 유일한 이름. [`tf.name_scope()`](../../index-3/index/framework.md#name\_scope)는 scope를 붙여 이런 유일한 이름을 제공합니다. 예를 들면, 첫번째 타워의 모든 연산들은 `tower_0`가 앞에 붙습니다. e.g. `tower_0/conv1/Conv2D`.
+* 타워 안의 연산을 실행할 선호하는 하드웨어 장치. [`tf.device()`](../../index-3/index/framework.md#device)는 이를 특정해줍니다. 예를 들면, 첫번째 타워의 모든 연산들은 `device('/gpu:0')` 스코프 안에 존재하게 됩니다. 이는 해당 연산들을 첫번째 GPU에서 실행하라는 것을 나타냅니다.
+
+모든 변수는 다중-GPU 버전에서 공유 되기 위하여 CPU에 고정되어있고, [`tf.get_variable()`](../../index-3/index/state\_ops.md#get\_variable)를 통하여 접근할 수 있습니다. 자세한 방법은 [변수 공유하기(Sharing Variables)](broken-reference)를 보세요.
+
+### 다수의 GPU 카드에서 모델을 실행하고 훈련하기
+
+만약 당신의 머신에 여러 대의 GPU 카드가 있다면 `cifar10_multi_gpu_train` 스크립트를 이용하여 모델을 좀더 빠르게 학습하는데 사용할 수 있습니다. 이 버전의 훈련 스크립트는 다수의 GPU 카드에 모델을 병렬화합니다.
+
+```shell
+python cifar10_multi_gpu_train.py --num_gpus=2
+```
+
+기본 GPU 카드 숫자는 1로 설정되어 있다는 것을 참고하세요. 추가적으로, 당신의 머신에 하나의 GPU만 사용가능하다면, 당신이 더욱 많은 GPU를 요청하더라도 모든 계산은 그 하나의 GPU에 위치하게 됩니다.
+
+> **연습:** `cifar10_train.py`의 기본 설정은 128의 배치 크기로 실행 하는 것입니다. 64 배치 크기로 2대의 GPU를 사용하여 `cifar10_multi_gpu_train.py`을 실행해보고 훈련 속도를 비교해보세요.
+
+## 다음 단계
+
+[축하합니다!](https://www.youtube.com/watch?v=9bZkp7q19f0) 당신은 CIFAR-10 튜토리얼을 완료하였습니다.
+
+만약 지금 당신만의 이미지 분류 시스템을 개발하고 훈련하는 데에 흥미가 있다면, 이 튜토리얼을 포크(fork)하고 당신의 이미지 분류 문제에 맞춰 구성요소를 교체하는 것을 추천합니다.
+
+> **연습:** [Street View House Numbers (SVHN)](http://ufldl.stanford.edu/housenumbers/) 데이터셋을 다운로드 하세요. CIFAR-10 튜토리얼을 포크(fork)하고 SVHN을 입력 데이터로 교체하세요. 예측 성능을 향상시키기 위하여 네트워크 아키텍쳐를 조정해보세요.
