@@ -28,13 +28,13 @@ layout:
 
 
 
-* [PC](index/pc/)
-* [모니터](index/monitor/)
-* [센서](index/sensor/)
-* [카메라](index/camera/)
-* [티업기](index/tee-up/)
-* [프로그램](index/program/)
-* [프로젝터](index/projector/)
+* [PC](gts-guide/pc/)
+* [모니터](gts-guide/monitor/)
+* [센서](gts-guide/sensor/)
+* [카메라](gts-guide/camera/)
+* [티업기](gts-guide/tee-up/)
+* [프로그램](gts-guide/program/)
+* [프로젝터](gts-guide/projector/)
 
 
 

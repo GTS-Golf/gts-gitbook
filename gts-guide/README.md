@@ -12,7 +12,7 @@ layout:
     visible: false
 ---
 
-# A/S메뉴얼
+# A/S 가이드
 
 ## A/S 가이드
 
