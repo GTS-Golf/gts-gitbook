@@ -12,9 +12,9 @@ layout:
     visible: false
 ---
 
-# PC
+# PC (키오스크)
 
-## [기본PC](basic.md)
+## [기본PC](1.-..md)
 
 ## [기가바이트(Gigabyte)](gigabyte/)
 
