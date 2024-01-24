@@ -28,7 +28,7 @@ layout:
 
 
 
-* [PC](gts-guide/pc/)
+* [PC](pc/)
 * [모니터](gts-guide/monitor/)
 * [센서](gts-guide/sensor/)
 * [카메라](gts-guide/camera/)

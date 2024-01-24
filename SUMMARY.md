@@ -2,8 +2,8 @@
 
 * [공지사항](README.md)
 * [A/S 가이드](gts-guide/README.md)
-  * [PC (키오스크)](gts-guide/pc/README.md)
-    * [1. 안켜져요.](gts-guide/pc/1.-..md)
+  * [PC (키오스크)](pc/README.md)
+    * [1. 안켜져요](gts-guide/pc/1..md)
     * [기가바이트(Gigabyte)](gts-guide/pc/gigabyte/README.md)
       * [기본적인 사용법](gts-guide/pc/gigabyte/basic\_usage.md)
       * [Cop](gts-guide/pc/gigabyte/os\_setup.md)

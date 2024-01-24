@@ -14,7 +14,7 @@ layout:
 
 # A/S 가이드
 
-## [PC](pc/)
+## [PC](../pc/)
 
 ## [모니터](monitor/)
 
