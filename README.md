@@ -28,13 +28,13 @@ layout:
 
 
 
-* [PC](pc/)
-* [모니터](index-1/)
-* [센서](index-2/)
-* [카메라](index-3/)
-* [티업기](index-4/)
-* [프로그램](index-5/)
-* [프로젝터](index-6/)
+* [PC](index/pc/)
+* [모니터](index/monitor/)
+* [센서](index/sensor/)
+* [카메라](index/camera/)
+* [티업기](index/tee-up/)
+* [프로그램](index/program/)
+* [프로젝터](index/projector/)
 
 
 
