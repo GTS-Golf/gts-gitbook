@@ -195,7 +195,7 @@ sess.close()
 
 ## Tensors
 
-TensorFlow 프로그램은 모든 데이터를 tensor 데이터 구조로 나타냅니다. 연산 graph에 있는 작업들(op) 간에는 tensor만 주고받을 수 있기 때문입니다. TensorFlow의 tensor를 n 차원의 배열이나 리스트라고 봐도 좋습니다. tensor는 정적인 타입(static type), 차원(rank 역자 주: 예를 들어 1차원, 2차원하는 차원), 형태(shape, 역자 주: 예를 들어 2차원이면 m x n) 값을 가집니다. TensorFlow가 어떻게 이 개념들을 다루는지 알고 싶으시면 [Rank, Shape, and Type](../../index-4/dims\_types.md)을 참조하시기 바랍니다.
+TensorFlow 프로그램은 모든 데이터를 tensor 데이터 구조로 나타냅니다. 연산 graph에 있는 작업들(op) 간에는 tensor만 주고받을 수 있기 때문입니다. TensorFlow의 tensor를 n 차원의 배열이나 리스트라고 봐도 좋습니다. tensor는 정적인 타입(static type), 차원(rank 역자 주: 예를 들어 1차원, 2차원하는 차원), 형태(shape, 역자 주: 예를 들어 2차원이면 m x n) 값을 가집니다. TensorFlow가 어떻게 이 개념들을 다루는지 알고 싶으시면 [Rank, Shape, and Type](broken-reference)을 참조하시기 바랍니다.
 
 ## Variables
 

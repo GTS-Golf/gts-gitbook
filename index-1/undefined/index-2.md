@@ -265,7 +265,7 @@ if step % 100 == 0:
 
 #### 상태 시각화
 
-[TensorBoard](../../index-2/index-3.md)에서 사용된 이벤트 파일을 내보내기 위해서, 그래프 작성 단계에서 모든 요약자료를 (이 경우에는 하나) 하나의 op에 모아야 한다.
+[TensorBoard](../../index-2/index-1.md)에서 사용된 이벤트 파일을 내보내기 위해서, 그래프 작성 단계에서 모든 요약자료를 (이 경우에는 하나) 하나의 op에 모아야 한다.
 
 ```python
 summary_op = tf.merge_all_summaries()
@@ -288,7 +288,7 @@ summary_writer.add_summary(summary_str, step)
 
 ![MNIST TensorBoard](../../g3doc/images/mnist\_tensorboard.png)
 
-**주의**: 어떻게 Tensorboard를 만들고 실행하는지에 대한 더 많은 정보는, 동봉된 튜토리얼을 보시기 바랍니다. [Tensorboard: 학습을 시각화하기](../../index-2/index-3.md).
+**주의**: 어떻게 Tensorboard를 만들고 실행하는지에 대한 더 많은 정보는, 동봉된 튜토리얼을 보시기 바랍니다. [Tensorboard: 학습을 시각화하기](../../index-2/index-1.md).
 
 #### Save a Checkpoint
 

@@ -28,11 +28,11 @@ CPU 디바이스는 `"/device:CPU:0"` (또는 `"/cpu:0"`)로, _i_th GPU 디바�
 
 #### 특정 디바이스에 오퍼레이션을 배치하려면 어떻게 해야 하는가?
 
-한 디바이스에 오퍼레이션 그룹을 배치하려면 이들을 [`with tf.device(name):`](../index-3/index/framework.md#device)컨텍스트 안에서 생성해라. TensorFlow에서 오퍼레이션을 디바이스에 할당하는 방법에 대한 자세한 설명 [TensorFlow를 GPU와 함께 사용하기](broken-reference), 그리고 다수의 GPU를 사용하는 모델에 대한 예 [CIFAR-10 tutorial](../index-1/undefined-3/index.md) 에 대한 how-to 문서를 참조해라.
+한 디바이스에 오퍼레이션 그룹을 배치하려면 이들을 [`with tf.device(name):`](../index-3/index/framework.md#device)컨텍스트 안에서 생성해라. TensorFlow에서 오퍼레이션을 디바이스에 할당하는 방법에 대한 자세한 설명 [TensorFlow를 GPU와 함께 사용하기](broken-reference), 그리고 다수의 GPU를 사용하는 모델에 대한 예 [CIFAR-10 tutorial](broken-reference) 에 대한 how-to 문서를 참조해라.
 
 #### 가용한 텐서의 다른 타입에는 무엇이 있는가?
 
-TensorFlow는 다양한 다른 종류의 데이터 타입과 텐서 쉐이프(shape)를 지원한다. 보다 자세한 내용은 [ranks, shapes, and types reference](../index-4/dims\_types.md)를 참조해라.
+TensorFlow는 다양한 다른 종류의 데이터 타입과 텐서 쉐이프(shape)를 지원한다. 보다 자세한 내용은 [ranks, shapes, and types reference](broken-reference)를 참조해라.
 
 ## TensorFlow 컴퓨테이션 실행하기
 
@@ -73,7 +73,7 @@ with tf.Session():
 텐서 런타임은 다수의 다양한 차원에 대해서 그래프 실행을 병렬화 한다:
 
 * 각 ops는 멀티코어 CPU 또는 GPU에서 멀티쓰레드를 사용하는 병렬처리 구현을 갖고 있다.
-* 텐서 그래프에 있는 각 노드는 멀티 노드에서 병렬로 처리 될 수 있고, 이는 스피드업을 가능하게 만든다 [CIFAR-10 멀티 GPU를 사용한 트레이닝](../index-1/undefined-3/index.md).
+* 텐서 그래프에 있는 각 노드는 멀티 노드에서 병렬로 처리 될 수 있고, 이는 스피드업을 가능하게 만든다 [CIFAR-10 멀티 GPU를 사용한 트레이닝](broken-reference).
 * 세션 API는 병렬처리에서 다수의 동시적 스텝(step)(예,[Session.run()](../index-3/index/client.md#Session.run)) 을 허용한다. 만약 하나의 스텝이 모든 리소스를 사용하지 않는다면, 이는 런타임의 처리량 향상을 가능하게 한다.
 
 #### TensorFlow에서 지원하는 클라이언트 언어는?
@@ -90,7 +90,7 @@ TensorFlow는 계산능력(Compute Capability)가 3.5 이상인 디바이스만 
 
 #### reader나 queue 사용시 `Sesson.run()`은 왜 멈추는가(Hang)?
 
-[reader](../index-3/index/io\_ops.md#ReaderBase)와 [queue](../index-3/index/io\_ops.md#QueueBase) 클래스는 입력(또는 큐의 메모리 공간)이 가능해 질 때 까지 _block_ 할 수 있는 특별한 오퍼레이션을 제공한다. 이러한 오퍼레이션들은 TensorFlow 컴퓨테이션을 다소 많이 복잡하게 하는 비용을 감수 하고서라도, 복잡한 [input pipelines](../index-2/index-4.md)을 만들 수 있도록 한다. 사용법에 대한 더 많은 정보를 원하면 [using `QueueRunner` objects to drive queues and readers](../index-2/index-4.md#creating-threads-to-prefetch-using-queuerunner-objects) 를 참조해라.
+[reader](../index-3/index/io\_ops.md#ReaderBase)와 [queue](../index-3/index/io\_ops.md#QueueBase) 클래스는 입력(또는 큐의 메모리 공간)이 가능해 질 때 까지 _block_ 할 수 있는 특별한 오퍼레이션을 제공한다. 이러한 오퍼레이션들은 TensorFlow 컴퓨테이션을 다소 많이 복잡하게 하는 비용을 감수 하고서라도, 복잡한 [input pipelines](../index-2/index-3.md)을 만들 수 있도록 한다. 사용법에 대한 더 많은 정보를 원하면 [using `QueueRunner` objects to drive queues and readers](../index-2/index-3.md#creating-threads-to-prefetch-using-queuerunner-objects) 를 참조해라.
 
 ## 변수
 
@@ -127,7 +127,7 @@ TensorFlow에서, 텐서는 정적 (inferred) 쉐이프와 동적 (true) 쉐이�
 
 * `input`으로 불리는 `Tensor`로 부터 배치 차원을 뽑아내기 위해 [`batch_size = tf.shape(input)[0]`](../index-3/index/array\_ops.md#shape) 을 사용해라. 그리고 `batch_size`로 불리는 `Tensor`에 저장해라.
 * `tf.reduce_sum(...) / batch_size` 대신 [`tf.reduce_mean()`](../index-3/index/math\_ops.md#reduce\_mean)를 사용해라.
-* [placeholders for feeding input](../index-2/index-4.md#feeding)를 사용 한다면 [`tf.placeholder(..., shape=[None, ...])`](../index-3/index/io\_ops.md#placeholder) 로 플레이스홀더(placeholder)를 생성해서 변수 배치 차원을 명시 할 수 있다. 쉐이프의 `None` 엘리먼트는 변수 크기 차원에 대응된다.
+* [placeholders for feeding input](../index-2/index-3.md#feeding)를 사용 한다면 [`tf.placeholder(..., shape=[None, ...])`](../index-3/index/io\_ops.md#placeholder) 로 플레이스홀더(placeholder)를 생성해서 변수 배치 차원을 명시 할 수 있다. 쉐이프의 `None` 엘리먼트는 변수 크기 차원에 대응된다.
 
 ## TensorBoard
 
@@ -143,7 +143,7 @@ TensorFlow 그래프에 요약 ops를 추가하고, 요약 내용을 로그 디�
 python tensorflow/tensorboard/tensorboard.py --logdir=path/to/log-directory
 ```
 
-보다 자세한 내용은 [Summaries and TensorBoard tutorial](../index-2/index-3.md) 를 참조해라.
+보다 자세한 내용은 [Summaries and TensorBoard tutorial](../index-2/index-1.md) 를 참조해라.
 
 #### TensorBoard를 띄울 때 마다, 네트워크 보안 팝업이 뜬다.
 
@@ -159,7 +159,7 @@ how-to 문서인 [adding a new operation to TensorFlow](broken-reference) 를 �
 
 쉬운 옵션은 파이썬으로 파싱 코드를 작성해서 데이터를 numpy 배열로 변경하고 [`tf.placeholder()`](../index-3/index/io\_ops.md#placeholder) 에 그 데이터 텐서를 넣는것이다.
 
-보다 자세한 내용은 [using placeholders for input](../index-2/index-4.md#feeding)를 봐라. 이 접근법은 빨리 만들어서 돌려보기 좋지만, 파싱이 성능 병목이 될 수 있다.
+보다 자세한 내용은 [using placeholders for input](../index-2/index-3.md#feeding)를 봐라. 이 접근법은 빨리 만들어서 돌려보기 좋지만, 파싱이 성능 병목이 될 수 있다.
 
 보다 효율적인 옵션은 [add a new op written in C++](broken-reference) 를 이용해서 당신의 데이터 포맷을 파싱하는 op를 추가하는 것이다. [guide to handling new data formats](broken-reference)에 이를 처리하는 절차에 대한 더 많은 정보가 있다.
 

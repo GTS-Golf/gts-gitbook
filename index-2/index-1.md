@@ -1,129 +1,146 @@
-# 쓰레드와 큐
+# 라온센서
 
-큐는 TensorFlow 를 사용하는 비동기 계산에 대해 강력한 메커니즘이다.
+(v0.12)
 
-TensorFlow 의 다른 모든 것들처럼, 하나의 큐는 TensorFlow 그래프에서 하나의 노드다. 이는 변수(variable)와 비슷한, 상태저장 노드다: 다른 노드들은 그 저장물(콘텐츠)의 수정이 가능하다. 특히, 노드들은 큐에 새로운 아이템들을 추가할 수 있거나 큐에 존재하는 아이템들을 해제할 수 있다.
+TensorFlow를 쓸려는 연산은 거대한 심층 신경망 학습처럼 복잡하고 내용이 헷갈리는 것들입니다. 이해, 디버깅, 또 TensorFlow 최적화를 쉽게 만들기 위해서 시각화 도구 세트를 하나 넣어뒀습니다. 바로 TensorBoard입니다. 여러분은 TensorBoard를 이용해서 TensorFlow의 그래프를 시각화하고 그래프를 실행해서 얻은 행렬을 도표로 나타내고 이미지 파일같은 부가 데이터를 보여줄 수도 있습니다. TensorBoard가 완전히 셋팅되면 이렇게 보일 것입니다:
 
-큐에 대한 감을 잡기 위해, 간단한 예제를 생각해보자. 우리는 "first in, first out" 큐(`FIFOQueus`) 를 만들어볼 것이고, 이를 0 으로 채울 것이다. 다음으로 큐에서 아이템을 제거, 아이템을 추가, 그리고 큐 끝에 이를 다시 넣는 그래프를 만들것이다. 큐의 숫자들은 천천히 증가한다.
+![MNIST TensorBoard](../g3doc/images/mnist\_tensorboard.png)
 
-![](../g3doc/images/IncremeterFifoQueue.gif)
+이 튜토리얼은 간단한 TensorBoard 사용법을 안내하는 것이 목적입니다. 참고할 만한 다른 문서들도 있어요! [TensorBoard 길라잡이](https://www.tensorflow.org/code/tensorflow/tensorboard/README.md)는 TensorBoard 사용법에 대한 팁이나 디버깅 방법 등 더 많은 정보를 담고 있습니다.
 
-`Enqueue`, `EnqueueMany`, 그리고 `Dequeue` 는 특별 노드들이다. 이들은 평범한 값 대신 큐에 대한 포인터를 가지며, 이들은 이 포인터를 변경할 수 있다. 우리는 큐의 매쏘드(method)들과 같은 것에 대해 생각해보길 권한다. 사실, Python API 에서, 이들은 큐 객체에 대한 매쏘드(method)들이다(`q.enqueue(...)`).
+## 데이터 저장(serialize)
 
-**주의** 큐 매쏘드들(method)(`q.enqueue(...)`와 같은)은, 큐 처럼, _반드시_ 같은 장치에서 실행해야 한다. 이들 연산이 생성될 때 호환성이 없는 장치 배치 지시들(Incompatible device placement directives) 은 무시될 것이다.
+TensorBoard는 TensorFlow를 실행할 때 만들 수 있는 요약 데이터(summary data)가 들어간 TensorFlow 이벤트 파일을 이용합니다. TensorBoard에서 요약 데이터가 보여주는 라이프 사이클을 설명해드리겠습니다.
 
-이제 큐에 대한 감을 조금 가졌을 것이고, 자세한 부분으로 들어가보자...
+가장 먼저 요약 데이터를 얻고 싶은 TensorFlow 그래프를 만들어야겠죠. 그리고 [summary operations](../index-3/index/train.md#summary-operations)을 이용해서 어느 노드를 기록할 지 결정합니다.
 
-## 큐 사용 개요
+예를 들어 지금 곱집합 신경망을 학습시켜서 MNIST 숫자들(역자 주: 프로그래밍의 'hello world'처럼 이미지 인식에서 가장 기초적인 예제)을 인식하려고 한다고 해봅시다. 아마도 학습률이 어떻게 달라지는지, 목표함수가 어떻게 바뀌는지를 기록하고 싶을 것입니다. 학습률과 손실을 각각 만들어내는 노드에 [`scalar_summary`](../index-3/index/train.md#scalar\_summary) 작업(op)을 추가해서 데이터를 모을 수 있습니다. 그리고 각 `scalar_summary`에는 `학습률`이나 `손실함수`같은 `태그`를 붙일 수도 있습니다.
 
-큐들은, `FIFOQueue` 와 `RandomShffleQueue` 와 같은, 그래프에서 비동기로 tensor 들을 계산하기 위한 중요한 TensorFlow 객체들이다.
+특정 층에서 발생한 액티베이션, 그래디언트 혹은 가중치의 분포를 시각화하고 싶을 것 같기도 합니다. 이럴 때는 그래디언트 결과물이나 가중치 변수에 [`histogram_summary`](../index-3/index/train.md#histogram\_summary) 작업(op)을 추가해서 데이터를 모을 수 있습니다.
 
-예를 들어, 대표적인 입력 아키텍쳐는 모델 학습을 위한 입력들을 준비하기 위해 `RandomShuffleQueue`를 사용해야 한다:
+가능한 모든 요약 작업(summary operation)들은 [summary operations](../index-3/index/train.md#summary-operations) 문서를 확인하시기 바랍니다.
 
-* 다수의 쓰레드들은 학습 예제들을 대비하고 이들을 큐에 넣는다.
-* 학습하는 쓰레드는 큐에서 mini-batches 를 빼내는 학습 연산을 실행한다.
+TensorFlow의 작업(op)들은 이용자가 그 작업이나 연관된 다른 작업을 실행시킬 때까지 아무 것도 하지 않습니다. 우리가 만든 요약 노드들은 그래프에서 지엽적인 존재입니다. 아무 노드도 요약 노드들의 결과에 영향을 받지 않거든요. 그렇기 때문에 요약 데이터를 만들려면 반드시 모든 요약 노드들을 실행시켜야 합니다. 일일이 손으로 관리하는 것은 짜증나는 일이니까 [`tf.merge_all_summaries`](../index-3/index/train.md#merge\_all\_summaries)를 사용해서 요약 노드들을 하나로 합쳐서 한 번에 모든 요약 데이터를 만들 수 있게 할 수 있습니다.
 
-이 아키텍쳐는, 입력 파이프라인들의 구성을 간략화하는 함수들에 대한 개요를 알려주는 [Reading data how to](../g3doc/how\_tos/reading\_data/) 에서 강조되었던 것처럼, 많은 이점들을 가진다.
+이제 통합된 요약 작업(summary op)을 실행시키면 모든 요약 데이터를 담은 `Summary` 프로토버퍼 오브젝트를 만들 수 있습니다. 마지막으로 이 요약 데이터를 디스크에 저장하기 위해 프로토버퍼 오브젝트를 [`tf.train.SummaryWriter`](../index-3/index/train.md#SummaryWriter)로 넘겨야 합니다.
 
-TensorFlow `Session` 객체는 멀티 쓰레드화 되어있다. 그래고 다수 쓰레드들은 같은 세션 사용을 쉽게할 수 있고 병렬로 연산들을 실행할 수 있다. 그러나, 위에서 묘사된 것처럼 쓰레드들을 다루는 Python 프로그램을 구현하는 것이 항상 쉽지만은 않다. 모든 쓰레드들은 함께 멈춰질 수 있어야 하며, 예외처리들은 처리되어야 하고 알려져야 한다. 그리고 큐는 멈췄을 때 적절하게 종료되어야 한다.
+`SummaryWriter`을 쓰기 위해서는 모든 요약 데이터를 저장할 디렉토리인 logdir을 정해줘야 합니다. `SummaryWriter`는 때에 따라 `그래프`도 이용할 수 있습니다. 만약 `그래프` 오브젝트를 이용하는 경우에는 TensorBoard가 텐서 형태(tensor shape) 정보에 덧붙여서 그래프도 보여줄 것입니다. 시각화된 그래프를 보면 그래프의 플로우에 대해서 더 잘 이해할 수 있겠죠. 자세한 내용은 [Tensor shape information](index-2.md#tensor-shape-information)을 참조하세요.
 
-TensorFlow 는 도움을 주는 두 클래스들을 제공한다: [tf.Coordinator](../index-3/index/train.md#Coordinator) 와 [tf.QueueRunner](../index-3/index/train.md#QueueRunner). 이들 두 클래스들은 함께 사용되기 위해 디자인되었다. `Coordinator` 클래스는 멀티 쓰레드들이 함께 정지되도록 돕고 예외처리들을 그들이 정지되기 위해 대기하는 프로그램에 알린다. `QueueRunner` 클래스는 같은 큐 안의 tensors 를 추가하기 위해 협력하는 많은 쓰레드들을 생성한다.
+드디어 그래프도 수정했고 `SummaryWriter`도 얻었습니다. 네트워크를 실행할 준비가 끝났어요! 원한다면 통합된 요약 작업을 매 단계마다 실행시켜서 엄청난 학습 데이터를 기록할 수 있습니다. 그런데 매 단계마다 저장하면 필요한 것보다 훨씬 많을 거에요. `n` 단계마다 요약 작업을 시키는 것을 고려해봅시다.
 
-## 조정자(Coordinator)
-
-조정자 클래스는 멀티 쓰레드들이 같이 정지되도록 한다.
-
-이것의 핵심 매쏘드들은 아래와 같다:
-
-* `should_stop()`: 쓰레드들이 정지되어야 한다면 True 값을 반환한다.
-* `request_stop(<exception>)`: 쓰레드들이 정지되어야 함을 요청한다.
-* \`join(): 특정 쓰레드들이 멈출 때 까지 대기한다.
-
-당신은 우선 `Coordinator` 객체를 생성하고, 다음으로 coordinator 를 사용하는 쓰레드들을 생성한다. 일반적으로 쓰레드들은 `should_stop()` 이 `True` 를 반환할 때 멈추는 루프를 실행한다.
-
-어떤 쓰레드는 멈춰야 하는 계산을 결정할 수 있다. 이것은 `request_stop()` 함수를 부르는 것이고 다른 쓰레드들은 `should_stop()` 함수가 `True` 값을 반환한 다음 정지된다.
+아래의 코드 예시는 [초보자를 위한 MNIST](http://tensorflow.org/tutorials/mnist/beginners/index.md)에 매 10단계마다 요약 작업을 하도록 조금 변형한 코드입니다. 이 코드를 실행시키고 `tensorboard --logdir=/tmp/mnist_logs`를 실행하면 학습하는 동안 가중치나 정확도같은 통계값이 어떻게 변했는지 볼 수 있습니다. 아래 코드는 일부를 발췌한 것이니 코드 전체는 [여기](https://www.tensorflow.org/code/tensorflow/examples/tutorials/mnist/mnist\_with\_summaries.py)를 참조하세요.
 
 ```python
-# 쓰레드 body: coordinator 가 정지가 요청됨을 알릴 때까지 반복
-# 어떤 조건이 true 가 이면, coordinator 가 멈출 것을 요청
-def MyLoop(coord):
-  while not coord.should_stop():
-    ...do something...
-    if ...some condition...:
-      coord.request_stop()
+def variable_summaries(var, name):
+  """Attach a lot of summaries to a Tensor."""
+  with tf.name_scope('summaries'):
+    mean = tf.reduce_mean(var)
+    tf.scalar_summary('mean/' + name, mean)
+    with tf.name_scope('stddev'):
+      stddev = tf.sqrt(tf.reduce_sum(tf.square(var - mean)))
+    tf.scalar_summary('sttdev/' + name, stddev)
+    tf.scalar_summary('max/' + name, tf.reduce_max(var))
+    tf.scalar_summary('min/' + name, tf.reduce_min(var))
+    tf.histogram_summary(name, var)
 
-# Main code: coordinator 생성
-coord = Coordinator()
+def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
+  """간단한 신경망 레이어를 만들기 위한 재사용가능 코드
+  
+  행렬곱을 하고 편차(bias)를 더하고 비선형화를 위한 액티베이션 함수로 ReLU
+  (역자 주: Rectified Linear Unit. 자주 유용하게 쓰이는 액티베이션 함수.)를 사용.
+  가독성을 위해 name scoping을 했고 다량의 요약 작업을 추가.
+  """
+  # name scope를 추가하여 그래프의 계층들을 논리적으로 분류  
+  with tf.name_scope(layer_name):
+    # 레이어의 가중치를 저장할 변수    
+    with tf.name_scope('weights'):
+      weights = weight_variable([input_dim, output_dim])
+      variable_summaries(weights, layer_name + '/weights')
+    with tf.name_scope('biases'):
+      biases = bias_variable([output_dim])
+      variable_summaries(biases, layer_name + '/biases')
+    with tf.name_scope('Wx_plus_b'):
+      preactivate = tf.matmul(input_tensor, weights) + biases
+      tf.histogram_summary(layer_name + '/pre_activations', preactivate)
+    activations = act(preactivate, 'activation')
+    tf.histogram_summary(layer_name + '/activations', activations)
+    return activations
 
-# 'MyLoop()' 를 실행하는 10개의 쓰레드를 생성
-threads = [threading.Thread(target=MyLoop, args=(coord,)) for i in xrange(10)]
+hidden1 = nn_layer(x, 784, 500, 'layer1')
 
-# 쓰레드들을 시작하고 그들 모두의 정지를 위한 대기
-for t in threads: t.start()
-coord.join(threads)
+with tf.name_scope('dropout'):
+  keep_prob = tf.placeholder(tf.float32)
+  tf.scalar_summary('dropout_keep_probability', keep_prob)
+  dropped = tf.nn.dropout(hidden1, keep_prob)
+
+y = nn_layer(dropped, 500, 10, 'layer2', act=tf.nn.softmax)
+
+with tf.name_scope('cross_entropy'):
+  diff = y_ * tf.log(y)
+  with tf.name_scope('total'):
+    cross_entropy = -tf.reduce_mean(diff)
+  tf.scalar_summary('cross entropy', cross_entropy)
+
+with tf.name_scope('train'):
+  train_step = tf.train.AdamOptimizer(FLAGS.learning_rate).minimize(
+      cross_entropy)
+
+with tf.name_scope('accuracy'):
+  with tf.name_scope('correct_prediction'):
+    correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+  with tf.name_scope('accuracy'):
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+  tf.scalar_summary('accuracy', accuracy)
+
+# 모든 요약 내용을 합치고 /tmp/mnist_logs에 기록합니다.(기본 경로)
+merged = tf.merge_all_summaries()
+train_writer = tf.train.SummaryWriter(FLAGS.summaries_dir + '/train',
+                                      sess.graph)
+test_writer = tf.train.SummaryWriter(FLAGS.summaries_dir + '/test')
+tf.initialize_all_variables().run()
 ```
 
-분명히, coordinator 는 다양한 처리를 하는 쓰레드들을 관리할 수 있다. 이들은 위 예제와 같이 모두 같지는 않다. 또한 coordinator 는 예외처리들을 감지하고 알린다. 자세한 것은 [Coordinator class](../index-3/index/train.md#Coordinator) 문서를 살펴보자.
-
-## QueueRunner
-
-`QueueRunner` 클래스는 enqueue 연산을 반복적으로 실행하는 쓰레드들을 생성한다. 이들 쓰레드들은 coordinatoror 를 이용해 함께 정지하도록 할 수 있다. 추가로, queue runner 는 예외처리가 coordinator 에 보고하면 자동적으로 queue 를 종료하는 _closer thread_ 를 실행한다.
-
-당신은 위에 설명된 아키텍처 구현을 위해 queue runner 를 사용할 수 있다.
-
-우선 입력 예제들에 대해 `Queue`를 사용하는 그래프를 만든다. 예제들을 처리하고 큐에 이들을 추가하는 연산을 추가한다. 큐에서 해제하는 것을 시작하는 학습 연산들을 추가한다.
+`SummaryWriters`를 초기화 시킨 후에는 모델을 학습시키거나 테스트할 때 요약 내용(summary)을 `SummaryWriters`에 추가해야 합니다.
 
 ```python
-example = ...예제를 생성하는 연산들...
-# 큐와 큐에 차례로 예제들을 추가하는 연산을 생성한다.
-queue = tf.RandomShuffleQueue(...)
-enqueue_op = queue.enqueue(example)
-# 예제들을 큐에서 해제하도록 하는 학습 그래프를 생성한다.
-inputs = queue.dequeue_many(batch_size)
-train_op = ...그래프의 학습 부분을 만들기 위한 'inputs' 을 사용
+# 모델을 학습시키고 요약 내용을 기록해 봅시다.
+# 매 10 단계마다 테스트 세트의 정확도를 측정하고 그 요약 내용을 기록합니다.
+# 매 단계마다 train_step을 실행하고 학습 내용을 추가합니다.
+
+def feed_dict(train):
+  """TensorFlow feed_dict를 만들기: data를 Tensor 플레이스홀더에 매칭"""
+  if train or FLAGS.fake_data:
+    xs, ys = mnist.train.next_batch(100, fake_data=FLAGS.fake_data)
+    k = FLAGS.dropout
+  else:
+    xs, ys = mnist.test.images, mnist.test.labels
+    k = 1.0
+  return {x: xs, y_: ys, keep_prob: k}
+
+for i in range(FLAGS.max_steps):
+  if i % 10 == 0:  # 요약 내용과 테스트 세트 정확도를 기록합니다.
+    summary, acc = sess.run([merged, accuracy], feed_dict=feed_dict(False))
+    test_writer.add_summary(summary, i)
+    print('Accuracy at step %s: %s' % (i, acc))
+  else:  # 학습한 세트에 대한 요약 내용을 기록하고 학습시킵니다.
+    summary, _ = sess.run([merged, train_step], feed_dict=feed_dict(True))
+    train_writer.add_summary(summary, i)
 ```
 
-Python 학습 프로그램에서, 예제들을 처리하고 큐에 추가하기 위한 쓰레드들을 실행할 `QueueRunner` 를 생성한다. `Coordinator` 를 생성하고 queue runner 가 coordinator 와 함께 이들의 쓰레드들을 시작하는 것을 요청한다. coordinator 를 사용하는 학습 루프를 적어보자.
+이제 TensorBoard를 이용해서 이 데이터를 시각화할 준비가 끝났습니다.
 
-```
-# 예제들을 큐에 병렬로 추가하기 위한 4 쓰레드를 실행할 queue runner 를 생성한다.
-qr = tf.train.QueueRunner(queue, [enqueue_op] * 4)
+## TensorBoard 실행
 
-# 그래프 시작
-sess = tf.Session()
-# queue runner 쓰레드들을 실행하는 coordinator 생성
-coord = tf.train.Coordinator()
-enqueue_threads = qr.create_threads(sess, coord=coord, start=True)
-# coordinator 와 함께 종료를 제어하는 학습 루프를 실행
-for step in xrange(1000000):
-    if coord.should_stop():
-        break
-    sess.run(train_op)
-# 완료 후, 쓰레드에 정지 요청
-coord.request_stop()
-# 실제 정지하기를 대기
-coord.join(threads)
+TensorBoard를 실행해보기 위해서 아래 명령을 이용해 봅시다.
+
+```bash
+tensorboard --logdir=path/to/log-directory
 ```
 
-## 예외처리 다루기
+`logdir`은 데이터를 `SummaryWriter`가 데이터를 저장(serialize)해놓은 디렉토리를 가리킵니다. 만약 `logdir` 디렉토리에 다른 실행에 대한 데이터를 저장해놓은 하위 디렉토리가 있다면 TensorBoard는 모두 다 시각화해서 보여줄 것입니다. 한 번 TensorBoard가 실행되면 웹브라우저 주소창에 `localhost:6006`을 입력해서 볼 수 있습니다.
 
-queue runner 에 의해 시작된 쓰레드들은 그냥 연산들을 큐에 추가하여 실행하는 것보다 더 많은 일을 수행한다. 또한 이들은 큐가 닫혔음을 알리기 위해 사용되는 `OutOfRangeError` 를 포함하여, 큐에 의해 생성된 예외처리들을 포착하고 처리한다.
+TensorBoard 화면 오른쪽 상단에서 네비게이션 탭을 찾을 수 있습니다. 각 탭들은 저장된 데이터 세트를 의미합니다.
 
-coordinator 를 사용하는 학습 프로그램은 마찬가지로 이들의 메인 루프에서 예외처리들을 포착하고 알려야 한다.
+그래프를 시각화하는 _그래프 탭_에 대한 더 자세한 정보는 [TensorBoard: 그래프 시각화](index-2.md)를 참조하시기 바랍니다.
 
-아래는 위 학습 루프의 향상된 버전이다.
-
-```python
-try:
-    for step in xrange(1000000):
-        if coord.should_stop():
-            break
-        sess.run(train_op)
-except Exception, e:
-    # Report exceptions to the coordinator.
-    coord.request_stop(e)
-finally:
-    # Terminate as usual.  It is innocuous to request stop twice.
-    coord.request_stop()
-    coord.join(threads)
-```
+TensorBoard에 대한 전반적인 정보를 더 얻고 싶으시면 [TensorBoard 길라잡이](../tensorboard/)를 참조해 주세요.

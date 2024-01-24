@@ -819,7 +819,7 @@ A map from restore\_names to variables. The restore\_name can be the moving\_ave
 
 ## Coordinator and QueueRunner
 
-See [Threading and Queues](../../index-2/index-1.md) for how to use threads and queues. For documentation on the Queue API, see [Queues](io\_ops.md#queues).
+See [Threading and Queues](../../index-2/index-4.md) for how to use threads and queues. For documentation on the Queue API, see [Queues](io\_ops.md#queues).
 
 ***
 
@@ -2154,7 +2154,7 @@ TypeError if `cluster` is not a dictionary or `ClusterDef` protocol buffer.
 
 The following ops output [`Summary`](https://www.tensorflow.org/code/tensorflow/core/framework/summary.proto) protocol buffers as serialized string tensors.
 
-You can fetch the output of a summary op in a session, and pass it to a [SummaryWriter](train.md#SummaryWriter) to append it to an event file. Event files contain [`Event`](https://www.tensorflow.org/code/tensorflow/core/util/event.proto) protos that can contain `Summary` protos along with the timestamp and step. You can then use TensorBoard to visualize the contents of the event files. See [TensorBoard and Summaries](../../index-2/index-3.md) for more details.
+You can fetch the output of a summary op in a session, and pass it to a [SummaryWriter](train.md#SummaryWriter) to append it to an event file. Event files contain [`Event`](https://www.tensorflow.org/code/tensorflow/core/util/event.proto) protos that can contain `Summary` protos along with the timestamp and step. You can then use TensorBoard to visualize the contents of the event files. See [TensorBoard and Summaries](../../index-2/index-1.md) for more details.
 
 ***
 
@@ -2316,7 +2316,7 @@ If no summaries were collected, returns None. Otherwise returns a scalar `Tensor
 
 ## Adding Summaries to Event Files
 
-See [Summaries and TensorBoard](../../index-2/index-3.md) for an overview of summaries, event files, and visualization in TensorBoard.
+See [Summaries and TensorBoard](../../index-2/index-1.md) for an overview of summaries, event files, and visualization in TensorBoard.
 
 ***
 

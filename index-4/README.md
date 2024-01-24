@@ -30,7 +30,7 @@ Please only use the TensorFlow name and marks when accurately referencing this s
 
 TensorFlow enables researchers to build machine learning models. We collect such models in our [Zoo](https://github.com/tensorflow/models). If you have built a model with TensorFlow, you may consider publishing it there.
 
-We keep a list of projects that use TensorFlow [here](uses.md). If you made something amazing with TensorFlow, we'd like to hear about it!
+We keep a list of projects that use TensorFlow [here](broken-reference). If you made something amazing with TensorFlow, we'd like to hear about it!
 
 ## Community
 
@@ -48,7 +48,7 @@ If you are interested in contributing to TensorFlow please [review the contribut
 
 ### Help / Support / How do I?
 
-For help and support, technical or algorithmic questions, please submit your questions to Stack Overflow: [https://stackoverflow.com/questions/tagged/tensorflow](https://stackoverflow.com/questions/tagged/tensorflow). You may also find answers in our [FAQ](faq.md), our [glossary](glossary.md), or in the [shapes, sizes and types guide](dims\_types.md). Please do not use the mailing list or issue tracker for support.
+For help and support, technical or algorithmic questions, please submit your questions to Stack Overflow: [https://stackoverflow.com/questions/tagged/tensorflow](https://stackoverflow.com/questions/tagged/tensorflow). You may also find answers in our [FAQ](faq.md), our [glossary](glossary.md), or in the [shapes, sizes and types guide](broken-reference). Please do not use the mailing list or issue tracker for support.
 
 ### Discussions
 
@@ -60,8 +60,8 @@ Please report bugs, feature requests and installation / compatibility issues on 
 
 ## Versioning
 
-TensorFlow uses [Semantic Versioning 2.0](http://semver.org). For details on the versioning of our public API and binary compatibility, see the [versioning document](versions.md).
+TensorFlow uses [Semantic Versioning 2.0](http://semver.org). For details on the versioning of our public API and binary compatibility, see the [versioning document](broken-reference).
 
 ## Roadmap
 
-A roadmap containing what we're working on at the moment is [here](roadmap.md).
+A roadmap containing what we're working on at the moment is [here](broken-reference).
