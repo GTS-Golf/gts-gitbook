@@ -76,6 +76,7 @@
     * [자주하는 질문](gts-guide/program/faq.md)
     * [타석제어프로그램](gts-guide/program/faq-1.md)
   * [프로젝터](gts-guide/projector/README.md)
+    * [Panasonic](gts-guide/projector/panasonic.md)
     * [EPSON](gts-guide/projector/epson/README.md)
       * [사용하는 곳](gts-guide/projector/epson/uses.md)
       * [자주하는 질문](gts-guide/projector/epson/faq.md)
