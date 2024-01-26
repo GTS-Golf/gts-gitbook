@@ -1298,7 +1298,7 @@ A `Tensor` of type `string`. Each string is a binary Example protocol buffer cor
 
 ## Queues
 
-TensorFlow provides several implementations of 'Queues', which are structures within the TensorFlow computation graph to stage pipelines of tensors together. The following describe the basic Queue interface and some implementations. To see an example use, see [Threading and Queues](../../../sensor/d300.md).
+TensorFlow provides several implementations of 'Queues', which are structures within the TensorFlow computation graph to stage pipelines of tensors together. The following describe the basic Queue interface and some implementations. To see an example use, see [Threading and Queues](broken-reference).
 
 ***
 

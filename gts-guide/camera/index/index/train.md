@@ -819,7 +819,7 @@ A map from restore\_names to variables. The restore\_name can be the moving\_ave
 
 ## Coordinator and QueueRunner
 
-See [Threading and Queues](../../../sensor/d300.md) for how to use threads and queues. For documentation on the Queue API, see [Queues](broken-reference).
+See [Threading and Queues](broken-reference) for how to use threads and queues. For documentation on the Queue API, see [Queues](broken-reference).
 
 ***
 

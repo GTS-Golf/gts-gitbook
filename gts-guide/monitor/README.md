@@ -32,13 +32,13 @@ layout:
 
 규모 있는 모델을 학습시키기 위해 텐서플로우의 인프라를 조금 더 자세하게 알아보고자 할 때의 기술적인 튜토리얼입니다. MNIST를 예시로 이용합니다.
 
-[튜토리얼 보기](undefined/index-2.md)
+[튜토리얼 보기](broken-reference)
 
 ### MNIST 데이터 다운로드
 
 MNIST 숫자 데이터셋을 다운로드하는 것에 대한 자세한 사항입니다. 꽤 흥미로운 자료입니다.
 
-[튜토리얼 보기](undefined/index-3.md)
+[튜토리얼 보기](broken-reference)
 
 ## tf.contrib.learn을 사용한 간편한 머신러닝
 

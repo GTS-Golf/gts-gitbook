@@ -286,4 +286,4 @@ with tf.Session() as sess:
 # [array([ 14.], dtype=float32)]
 ```
 
-만약 feed 를 제대로 제공하지 않으면 `placeholder()` 연산은 에러를 출력할 것입니다. feed를 이용하는 다른 예시는 [MNIST fully-connected feed tutorial](../../monitor/undefined/index-2.md)([source code](https://www.tensorflow.org/code/tensorflow/g3doc/tutorials/mnist/fully\_connected\_feed.py))를 참조하시기 바랍니다.
+만약 feed 를 제대로 제공하지 않으면 `placeholder()` 연산은 에러를 출력할 것입니다. feed를 이용하는 다른 예시는 [MNIST fully-connected feed tutorial](broken-reference)([source code](https://www.tensorflow.org/code/tensorflow/g3doc/tutorials/mnist/fully\_connected\_feed.py))를 참조하시기 바랍니다.

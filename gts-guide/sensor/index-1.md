@@ -25,7 +25,7 @@ with tf.Session():
 
 While you can replace any Tensor with feed data, including variables and constants, the best practice is to use a [`placeholder` op](broken-reference) node. A `placeholder` exists solely to serve as the target of feeds. It is not initialized and contains no data. A placeholder generates an error if it is executed without a feed, so you won't forget to feed it.
 
-An example using `placeholder` and feeding to train on MNIST data can be found in [`tensorflow/examples/tutorials/mnist/fully_connected_feed.py`](https://www.tensorflow.org/code/tensorflow/examples/tutorials/mnist/fully\_connected\_feed.py), and is described in the [MNIST tutorial](../monitor/undefined/index-2.md).
+An example using `placeholder` and feeding to train on MNIST data can be found in [`tensorflow/examples/tutorials/mnist/fully_connected_feed.py`](https://www.tensorflow.org/code/tensorflow/examples/tutorials/mnist/fully\_connected\_feed.py), and is described in the [MNIST tutorial](broken-reference).
 
 ## Reading from files
 
@@ -210,7 +210,7 @@ If all goes well, you can now run your training steps and the queues will be fil
 
 The last ingredient is the [`Coordinator`](broken-reference). This is responsible for letting all the threads know if anything has signalled a shut down. Most commonly this would be because an exception was raised, for example one of the threads got an error when running some operation (or an ordinary Python exception).
 
-For more about threading, queues, QueueRunners, and Coordinators [see here](d300.md).
+For more about threading, queues, QueueRunners, and Coordinators [see here](broken-reference).
 
 #### Aside: How clean shut-down when limiting epochs works
 
