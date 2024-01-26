@@ -20,7 +20,7 @@
 
 이 튜토리얼을 위한 코드를 실행하기 위해서,
 
-1. 아직 설치되지 않았다면, TensorFlow를 설치한다 [Install TensorFlow](../../pc/asus/)
+1. 아직 설치되지 않았다면, TensorFlow를 설치한다 [Install TensorFlow](../../pc/pc3/)
 2. 튜토리얼 코드를 다운로드 한다 [the tutorial code](https://www.tensorflow.org/code/tensorflow/examples/learn/wide\_n\_deep\_tutorial.py)
 3.  pandas 데이터 분석 라이브러리를 설치한다. tf.learn은 pandas 을 필요로 하지 않지만 이를 지원한다. 그리고 이 튜토리얼은 pandas를 사용한다. pandad 를 설치하기 위해서 :
 

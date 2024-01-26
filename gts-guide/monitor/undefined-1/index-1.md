@@ -22,7 +22,7 @@ layout:
 
 이번 튜토리얼 코드를 실행해보기 위해서:
 
-1. 텐서플로우를 설치하지 않았다면 [텐서플로 설치](../../pc/asus/)
+1. 텐서플로우를 설치하지 않았다면 [텐서플로 설치](../../pc/pc3/)
 2. [튜토리얼 코드](https://www.tensorflow.org/code/tensorflow/examples/learn/wide\_n\_deep\_tutorial.py) 다운로드.
 3. pandas 데이터 분석 라이브러리 설치.
 
