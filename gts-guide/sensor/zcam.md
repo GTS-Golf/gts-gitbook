@@ -6,7 +6,7 @@ TensorFlow 연산 그래프(computation graph)는 강력하지만 복잡합니�
 
 ![TensorFlow 그래프의 시각화](../../g3doc/images/graph\_vis\_animation.gif) _TensorFlow 그래프의 시각화._
 
-그래프를 보려면, TensorBoard를 실행할 때 로그 디렉토리를 입력한 후 상단 그래프 탭을 클릭하고 왼쪽 위 모서리에 있는 메뉴를 통해 적당한 작업을 선택하면 됩니다. TensorBoard를 어떻게 실행하는지와 필요한 정보를 기록하고 있는지 확인하는 방법에 대한 더 많은 정보를 보려면 [TensorBoard: 시각화 학습](index-3.md)를 참고하세요.
+그래프를 보려면, TensorBoard를 실행할 때 로그 디렉토리를 입력한 후 상단 그래프 탭을 클릭하고 왼쪽 위 모서리에 있는 메뉴를 통해 적당한 작업을 선택하면 됩니다. TensorBoard를 어떻게 실행하는지와 필요한 정보를 기록하고 있는지 확인하는 방법에 대한 더 많은 정보를 보려면 [TensorBoard: 시각화 학습](index.md)를 참고하세요.
 
 ## 이름 범주화(Name scoping)와 노드
 
@@ -41,13 +41,13 @@ with tf.name_scope('hidden') as scope:
 
 레이아웃을 간단하게 하는 두 번째 트릭이 있습니다. 대부분의 TensorFlow 그래프는 다른 노드와 많이 연결된 몇 개의 노드로 이루어져 있습니다. 예를 들어, 많은 노드들이 초기화 단계에 컨트롤 종속을 가지고 있을 수 있습니다. 그래서 `init` 노드와 그 노드에 종속된 것들 사이의 모든 엣지(edge)를 그려보면 많은 실선들로 뭉쳐진 모습이 나타날 것입니다.
 
-뭉쳐져 보이는 것을 줄이기 위해 시각화 프로그램은 모든 상위 노드를 우측에 있는 _auxiliary(보조)_ 공간에 분리해 두고 엣지를 나타내는 선을 그리지 않습니다. 선 대신에 연결을 나타내기 위해 작은 _노드 아이콘_을 그립니다. 보조 노드를 떼어놓더라도 중요한 정보가 사라지는 일은 잘 없습니다. 왜냐하면 이 노드들은 보통 부기 기능(bookkeeping function)과 관련있기 때문입니다. 메인 그래프과 보조 영역 사이에서 노드를 어떻게 움직이는지 보려면 [Interaction](index-2.md#interaction)를 보세요.
+뭉쳐져 보이는 것을 줄이기 위해 시각화 프로그램은 모든 상위 노드를 우측에 있는 _auxiliary(보조)_ 공간에 분리해 두고 엣지를 나타내는 선을 그리지 않습니다. 선 대신에 연결을 나타내기 위해 작은 _노드 아이콘_을 그립니다. 보조 노드를 떼어놓더라도 중요한 정보가 사라지는 일은 잘 없습니다. 왜냐하면 이 노드들은 보통 부기 기능(bookkeeping function)과 관련있기 때문입니다. 메인 그래프과 보조 영역 사이에서 노드를 어떻게 움직이는지 보려면 [Interaction](zcam.md#interaction)를 보세요.
 
 | ![conv\_1 is part of the main graph](../../g3doc/images/conv\_1.png) | ![save is extracted as auxiliary node](../../g3doc/images/save.png)                                                                                         |
 | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `conv_1` 노드는 `save` 와 연결되어 있습니다. 우측에 작은 `save` 노드 아이콘이 있는 것을 주의하세요.  | `save` 는 상위에 있고 보조 노드로 표시됩니다. `conv_1` 과의 연결은 그것의 왼쪽에 있는 노드 아이콘으로 표현됩니다. `save`가 많은 연결을 가지고 있기 때문에, 클러스터를 더 줄이기 위해, 처음 5개만 보여주고 나머지는 `... 12 more` 로 축약합니다. |
 
-마지막 구조 단순화는 _series collapsing_ 입니다. 이름의 마지막 숫자만 다르고 같은 구조를 가진 노드인 순차적 모티프(sequential motif)는 아래에 나와 있는 것처럼 하나의 노드 스택으로 접을 수 있습니다. 긴 배열을 가진 네트워크의 경우, 이를 통해 모양이 굉장히 단순하게 됩니다. 노드의 계층을 나타낼 때와 마찬가지로, 더블 클릭해서 이 series를 펼칠 수 있습니다. 어떻게 특정 노드 셋이 접힌 것을 비활성화/활성화 하는지는 [Interaction](index-2.md#interaction)를 보세요.
+마지막 구조 단순화는 _series collapsing_ 입니다. 이름의 마지막 숫자만 다르고 같은 구조를 가진 노드인 순차적 모티프(sequential motif)는 아래에 나와 있는 것처럼 하나의 노드 스택으로 접을 수 있습니다. 긴 배열을 가진 네트워크의 경우, 이를 통해 모양이 굉장히 단순하게 됩니다. 노드의 계층을 나타낼 때와 마찬가지로, 더블 클릭해서 이 series를 펼칠 수 있습니다. 어떻게 특정 노드 셋이 접힌 것을 비활성화/활성화 하는지는 [Interaction](zcam.md#interaction)를 보세요.
 
 | ![Sequence of nodes](../../g3doc/images/series.png) | ![Expanded sequence of nodes](../../g3doc/images/series\_expanded.png) |
 | --------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -104,7 +104,7 @@ TensorBoard는 그래프의 레이아웃을 바꿀 수 있는 몇 가지 방법�
 
 ## Runtime statistics
 
-실행할 때 총 메모리 사용량, 총 계산 시간, 노드의 tensor 형태와 같은 런타임 메타데이터를 수집하면 보통 도움이 됩니다. 아래의 코드 예제는 [simple MNIST tutorial](../monitor/undefined/index.md)의 수정본 중 훈련과 테스트 부분에서 발췌한 내용으로 요약과 런타임 통계를 기록하는 부분입니다. 요약을 어떻게 기록하는지는 [Summaries Tutorial](index-3.md#serializing-the-data)을 보세요. 전체 소스는 [여기](https://www.tensorflow.org/code/tensorflow/examples/tutorials/mnist/mnist\_with\_summaries.py)에 있습니다.
+실행할 때 총 메모리 사용량, 총 계산 시간, 노드의 tensor 형태와 같은 런타임 메타데이터를 수집하면 보통 도움이 됩니다. 아래의 코드 예제는 [simple MNIST tutorial](../monitor/undefined/index.md)의 수정본 중 훈련과 테스트 부분에서 발췌한 내용으로 요약과 런타임 통계를 기록하는 부분입니다. 요약을 어떻게 기록하는지는 [Summaries Tutorial](index.md#serializing-the-data)을 보세요. 전체 소스는 [여기](https://www.tensorflow.org/code/tensorflow/examples/tutorials/mnist/mnist\_with\_summaries.py)에 있습니다.
 
 ```python
   # 모델을 트레이닝하고 또한 요약을 작성합니다.

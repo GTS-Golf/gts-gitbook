@@ -262,7 +262,7 @@ print(sess.run(norm))
 print(sess.run(norm))
 ```
 
-또 다른 난수값을 사용하는 일반적인 사례는 변수들의 초기화입니다. 이 또한 [Variables How To](../../../sensor/index.md)에서 볼 수 있습니다.
+또 다른 난수값을 사용하는 일반적인 사례는 변수들의 초기화입니다. 이 또한 [Variables How To](../../../sensor/d200.md)에서 볼 수 있습니다.
 
 ```python
 # Use random uniform values in [0, 1) as the initializer for a variable of shape
