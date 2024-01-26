@@ -1,12 +1,12 @@
-# ZCAM
+# 1 - 1. 레디가 안되는 경우
 
 (v1.0)
 
 TensorFlow 연산 그래프(computation graph)는 강력하지만 복잡합니다. 그래프를 시각화하면 이해와 디버그에 도움이 됩니다. 여기에 시각화 작동 예시가 있습니다.
 
-![TensorFlow 그래프의 시각화](../../g3doc/images/graph\_vis\_animation.gif) _TensorFlow 그래프의 시각화._
+![TensorFlow 그래프의 시각화](../../../../g3doc/images/graph\_vis\_animation.gif) _TensorFlow 그래프의 시각화._
 
-그래프를 보려면, TensorBoard를 실행할 때 로그 디렉토리를 입력한 후 상단 그래프 탭을 클릭하고 왼쪽 위 모서리에 있는 메뉴를 통해 적당한 작업을 선택하면 됩니다. TensorBoard를 어떻게 실행하는지와 필요한 정보를 기록하고 있는지 확인하는 방법에 대한 더 많은 정보를 보려면 [TensorBoard: 시각화 학습](index.md)를 참고하세요.
+그래프를 보려면, TensorBoard를 실행할 때 로그 디렉토리를 입력한 후 상단 그래프 탭을 클릭하고 왼쪽 위 모서리에 있는 메뉴를 통해 적당한 작업을 선택하면 됩니다. TensorBoard를 어떻게 실행하는지와 필요한 정보를 기록하고 있는지 확인하는 방법에 대한 더 많은 정보를 보려면 [TensorBoard: 시각화 학습](../1-2.md)를 참고하세요.
 
 ## 이름 범주화(Name scoping)와 노드
 
@@ -31,7 +31,7 @@ with tf.name_scope('hidden') as scope:
 
 이제 좀 더 복잡한 노드가 초기 상태와 펼쳐진 상태로 있는 현실적 예제를 살펴봅시다.
 
-| ![Unexpanded name scope](../../g3doc/images/pool1\_collapsed.png)             | ![Expanded name scope](../../g3doc/images/pool1\_expanded.png)                         |
+| ![Unexpanded name scope](../../../../g3doc/images/pool1\_collapsed.png)       | ![Expanded name scope](../../../../g3doc/images/pool1\_expanded.png)                   |
 | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | 최상단 name scope `pool_1`의 초기 화면. 우측 상단의 주황색 `+` 버튼을 클릭하거나 노드를 더블 클릭하면 펼칠 수 있다. | `pool_1` name scope가 펼치진 모습. 우측 상단의 주황색 `-` 버튼을 클릭하거나 노드를 더블 클릭하면 name scope를 접을 수 있다. |
 
@@ -41,31 +41,31 @@ with tf.name_scope('hidden') as scope:
 
 레이아웃을 간단하게 하는 두 번째 트릭이 있습니다. 대부분의 TensorFlow 그래프는 다른 노드와 많이 연결된 몇 개의 노드로 이루어져 있습니다. 예를 들어, 많은 노드들이 초기화 단계에 컨트롤 종속을 가지고 있을 수 있습니다. 그래서 `init` 노드와 그 노드에 종속된 것들 사이의 모든 엣지(edge)를 그려보면 많은 실선들로 뭉쳐진 모습이 나타날 것입니다.
 
-뭉쳐져 보이는 것을 줄이기 위해 시각화 프로그램은 모든 상위 노드를 우측에 있는 _auxiliary(보조)_ 공간에 분리해 두고 엣지를 나타내는 선을 그리지 않습니다. 선 대신에 연결을 나타내기 위해 작은 _노드 아이콘_을 그립니다. 보조 노드를 떼어놓더라도 중요한 정보가 사라지는 일은 잘 없습니다. 왜냐하면 이 노드들은 보통 부기 기능(bookkeeping function)과 관련있기 때문입니다. 메인 그래프과 보조 영역 사이에서 노드를 어떻게 움직이는지 보려면 [Interaction](zcam.md#interaction)를 보세요.
+뭉쳐져 보이는 것을 줄이기 위해 시각화 프로그램은 모든 상위 노드를 우측에 있는 _auxiliary(보조)_ 공간에 분리해 두고 엣지를 나타내는 선을 그리지 않습니다. 선 대신에 연결을 나타내기 위해 작은 _노드 아이콘_을 그립니다. 보조 노드를 떼어놓더라도 중요한 정보가 사라지는 일은 잘 없습니다. 왜냐하면 이 노드들은 보통 부기 기능(bookkeeping function)과 관련있기 때문입니다. 메인 그래프과 보조 영역 사이에서 노드를 어떻게 움직이는지 보려면 [Interaction](./#interaction)를 보세요.
 
-| ![conv\_1 is part of the main graph](../../g3doc/images/conv\_1.png) | ![save is extracted as auxiliary node](../../g3doc/images/save.png)                                                                                         |
-| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `conv_1` 노드는 `save` 와 연결되어 있습니다. 우측에 작은 `save` 노드 아이콘이 있는 것을 주의하세요.  | `save` 는 상위에 있고 보조 노드로 표시됩니다. `conv_1` 과의 연결은 그것의 왼쪽에 있는 노드 아이콘으로 표현됩니다. `save`가 많은 연결을 가지고 있기 때문에, 클러스터를 더 줄이기 위해, 처음 5개만 보여주고 나머지는 `... 12 more` 로 축약합니다. |
+| ![conv\_1 is part of the main graph](../../../../g3doc/images/conv\_1.png) | ![save is extracted as auxiliary node](../../../../g3doc/images/save.png)                                                                                   |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `conv_1` 노드는 `save` 와 연결되어 있습니다. 우측에 작은 `save` 노드 아이콘이 있는 것을 주의하세요.        | `save` 는 상위에 있고 보조 노드로 표시됩니다. `conv_1` 과의 연결은 그것의 왼쪽에 있는 노드 아이콘으로 표현됩니다. `save`가 많은 연결을 가지고 있기 때문에, 클러스터를 더 줄이기 위해, 처음 5개만 보여주고 나머지는 `... 12 more` 로 축약합니다. |
 
-마지막 구조 단순화는 _series collapsing_ 입니다. 이름의 마지막 숫자만 다르고 같은 구조를 가진 노드인 순차적 모티프(sequential motif)는 아래에 나와 있는 것처럼 하나의 노드 스택으로 접을 수 있습니다. 긴 배열을 가진 네트워크의 경우, 이를 통해 모양이 굉장히 단순하게 됩니다. 노드의 계층을 나타낼 때와 마찬가지로, 더블 클릭해서 이 series를 펼칠 수 있습니다. 어떻게 특정 노드 셋이 접힌 것을 비활성화/활성화 하는지는 [Interaction](zcam.md#interaction)를 보세요.
+마지막 구조 단순화는 _series collapsing_ 입니다. 이름의 마지막 숫자만 다르고 같은 구조를 가진 노드인 순차적 모티프(sequential motif)는 아래에 나와 있는 것처럼 하나의 노드 스택으로 접을 수 있습니다. 긴 배열을 가진 네트워크의 경우, 이를 통해 모양이 굉장히 단순하게 됩니다. 노드의 계층을 나타낼 때와 마찬가지로, 더블 클릭해서 이 series를 펼칠 수 있습니다. 어떻게 특정 노드 셋이 접힌 것을 비활성화/활성화 하는지는 [Interaction](./#interaction)를 보세요.
 
-| ![Sequence of nodes](../../g3doc/images/series.png) | ![Expanded sequence of nodes](../../g3doc/images/series\_expanded.png) |
-| --------------------------------------------------- | ---------------------------------------------------------------------- |
-| 노드 시퀸스가 접힌 모습.                                      | 더블 클릭 후에 펼쳐진 모습의 일부분.                                                  |
+| ![Sequence of nodes](../../../../g3doc/images/series.png) | ![Expanded sequence of nodes](../../../../g3doc/images/series\_expanded.png) |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 노드 시퀸스가 접힌 모습.                                            | 더블 클릭 후에 펼쳐진 모습의 일부분.                                                        |
 
 마지막으로, 가독성을 높이기 위해, 시각화는 상수와 요약 노드를 위해 특별한 아이콘을 사용합니다. 간단히, 노드 기호 표가 있습니다:
 
-| 기호                                                                         | 의미                                                                   |
-| -------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| ![Name scope](../../g3doc/images/namespace\_node.png)                      | _High-level_ 노드는 name scope를 나타냅니다. high-level 노드를 펼치기 위해 더블 클릭 하세요. |
-| ![Sequence of unconnected nodes](../../g3doc/images/horizontal\_stack.png) | 서로 연결되지 않은 숫자가 메겨진 노드의 시퀸스.                                          |
-| ![Sequence of connected nodes](../../g3doc/images/vertical\_stack.png)     | 서로 연결된 숫자가 메겨진 노드의 시퀸스.                                              |
-| ![Operation node](../../g3doc/images/op\_node.png)                         | 각각의 연산 노드.                                                           |
-| ![Constant node](../../g3doc/images/constant.png)                          | 상수.                                                                  |
-| ![Summary node](../../g3doc/images/summary.png)                            | 요약 노드.                                                               |
-| ![Data flow edge](../../g3doc/images/dataflow\_edge.png)                   | 간선은 연산 사이의 데이터 흐름을 보여줍니다.                                            |
-| ![Control dependency edge](../../g3doc/images/control\_edge.png)           | 간선은 연산 사이의 컨트롤 종속을 보여줍니다.                                            |
-| ![Reference edge](../../g3doc/images/reference\_edge.png)                  | 레퍼런스 간선은 나가는 연산 노드가 들어오는 tensor를 변형할 수 있다는 것을 보여줍니다.                 |
+| 기호                                                                               | 의미                                                                   |
+| -------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| ![Name scope](../../../../g3doc/images/namespace\_node.png)                      | _High-level_ 노드는 name scope를 나타냅니다. high-level 노드를 펼치기 위해 더블 클릭 하세요. |
+| ![Sequence of unconnected nodes](../../../../g3doc/images/horizontal\_stack.png) | 서로 연결되지 않은 숫자가 메겨진 노드의 시퀸스.                                          |
+| ![Sequence of connected nodes](../../../../g3doc/images/vertical\_stack.png)     | 서로 연결된 숫자가 메겨진 노드의 시퀸스.                                              |
+| ![Operation node](../../../../g3doc/images/op\_node.png)                         | 각각의 연산 노드.                                                           |
+| ![Constant node](../../../../g3doc/images/constant.png)                          | 상수.                                                                  |
+| ![Summary node](../../../../g3doc/images/summary.png)                            | 요약 노드.                                                               |
+| ![Data flow edge](../../../../g3doc/images/dataflow\_edge.png)                   | 간선은 연산 사이의 데이터 흐름을 보여줍니다.                                            |
+| ![Control dependency edge](../../../../g3doc/images/control\_edge.png)           | 간선은 연산 사이의 컨트롤 종속을 보여줍니다.                                            |
+| ![Reference edge](../../../../g3doc/images/reference\_edge.png)                  | 레퍼런스 간선은 나가는 연산 노드가 들어오는 tensor를 변형할 수 있다는 것을 보여줍니다.                 |
 
 ## Interaction <a href="#interaction" id="interaction"></a>
 
@@ -73,7 +73,7 @@ with tf.name_scope('hidden') as scope:
 
 열린 노드를 닫기 위해 다시 한번 더블 클릭하거나 노드의 `-` 버튼을 누르세요. 노드를 선택하기 위해 한 번 누르셔도 됩니다. 노드는 어두운 색으로 변하고, 노드에 대한 세부 사항과 연결된 노드가 시각화의 우측 상단 모서리 정보 카드에 표시됩니다.
 
-| ![Info card of a name scope](../../g3doc/images/infocard.png)                                                       | ![Info card of operation node](../../g3doc/images/infocard\_op.png)                   |
+| ![Info card of a name scope](../../../../g3doc/images/infocard.png)                                                 | ![Info card of operation node](../../../../g3doc/images/infocard\_op.png)             |
 | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | 정보 카드가 `conv2` name scope의 세부 정보를 보여줍니다. 입력과 출력은 name scope 내의 연산 노드의 입력과 출력에서 결합됩니다. name scope에 대한 속성은 보여지지 않습니다. | 정보 카드가 `DecodeRaw` 연산 노드의 세부 정보를 보여줍니다. 입력과 출력에 더해서, 카드는 현재 연산에 관련된 디바이스와 속성들을 보여줍니다. |
 
@@ -90,7 +90,7 @@ TensorBoard는 그래프의 레이아웃을 바꿀 수 있는 몇 가지 방법�
 
 아래의 이미지는 실제 그래프 중 일부분을 보여줍니다.
 
-| ![Color by structure](../../g3doc/images/colorby\_structure.png)                                     | ![Color by device](../../g3doc/images/colorby\_device.png)                                    |
+| ![Color by structure](../../../../g3doc/images/colorby\_structure.png)                               | ![Color by device](../../../../g3doc/images/colorby\_device.png)                              |
 | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | Structure view: 회색 노드는 유일한 구조를 가지고 있습니다. 주황색 `conv1` 과 `conv2` 노드는 같은 구조를 가지고 있고 다른 색을 가진 노드와 비슷합니다. | Device view: Name scope는 내부 연산 노드의 장치 비율에 비례해서 색이 지정됩니다. 여기서는 보라색이 GPU를 의미하고 초록색이 CPU를 의미합니다. |
 
@@ -98,13 +98,13 @@ TensorBoard는 그래프의 레이아웃을 바꿀 수 있는 몇 가지 방법�
 
 텐서의 형태가 연속된 `GraphDef`에 포함되면 그래프 시각화 프로그램이 텐서의 차원을 엣지에 표시하고 텐서의 크기는 엣지의 두깨로 나타냅니다. `GraphDef`에 텐서 형태를 포함하기 위해서는 그래프를 연속화할 때 실제 그래프 객체(`sess.graph`와 같이)를 `SummaryWriter` 에 전달합니다. 아래의 이미지는 텐서의 형태 정보를 가진 CIFAR-10 모델을 보여줍니다:
 
-| ![CIFAR-10 model with tensor shape information](../../g3doc/images/tensor\_shapes.png) |
-| -------------------------------------------------------------------------------------- |
-| 텐서 형태 정보를 가진 IFAR-10 모델.                                                               |
+| ![CIFAR-10 model with tensor shape information](../../../../g3doc/images/tensor\_shapes.png) |
+| -------------------------------------------------------------------------------------------- |
+| 텐서 형태 정보를 가진 IFAR-10 모델.                                                                     |
 
 ## Runtime statistics
 
-실행할 때 총 메모리 사용량, 총 계산 시간, 노드의 tensor 형태와 같은 런타임 메타데이터를 수집하면 보통 도움이 됩니다. 아래의 코드 예제는 [simple MNIST tutorial](../monitor/undefined/index.md)의 수정본 중 훈련과 테스트 부분에서 발췌한 내용으로 요약과 런타임 통계를 기록하는 부분입니다. 요약을 어떻게 기록하는지는 [Summaries Tutorial](index.md#serializing-the-data)을 보세요. 전체 소스는 [여기](https://www.tensorflow.org/code/tensorflow/examples/tutorials/mnist/mnist\_with\_summaries.py)에 있습니다.
+실행할 때 총 메모리 사용량, 총 계산 시간, 노드의 tensor 형태와 같은 런타임 메타데이터를 수집하면 보통 도움이 됩니다. 아래의 코드 예제는 [simple MNIST tutorial](../../../monitor/undefined/index.md)의 수정본 중 훈련과 테스트 부분에서 발췌한 내용으로 요약과 런타임 통계를 기록하는 부분입니다. 요약을 어떻게 기록하는지는 [Summaries Tutorial](../1-2.md#serializing-the-data)을 보세요. 전체 소스는 [여기](https://www.tensorflow.org/code/tensorflow/examples/tutorials/mnist/mnist\_with\_summaries.py)에 있습니다.
 
 ```python
   # 모델을 트레이닝하고 또한 요약을 작성합니다.
@@ -146,5 +146,5 @@ TensorBoard는 그래프의 레이아웃을 바꿀 수 있는 몇 가지 방법�
 
 tensorboard를 시작하고 그래프 탭으로 가면, 실행 메타데이터가 추가된 단계에 대응하는 "Sessopm runs" 아래 옵션들을 볼 수 있습니다. 이 중 하나를 선택하면 사용되지 않는 노드들은 가려줘서 해당 단계에서 네트워크의 상태를 볼 수 있습니다. 왼쪽의 컨트롤에서 총 메모리 또는 총 계산 시간으로 노드의 색을 지정할 수 있습니다. 추가적으로, 노드를 클릭하면 정확한 총 메모리, 계산 시간, 텐서 출력 크기를 보여줍니다.
 
-| ![Color by compute time](../../g3doc/images/colorby\_compute\_time.png) | ![Run metadata graph](../../g3doc/images/run\_metadata\_graph.png) | ![Run metadata info card](../../g3doc/images/run\_metadata\_infocard.png) |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| ![Color by compute time](../../../../g3doc/images/colorby\_compute\_time.png) | ![Run metadata graph](../../../../g3doc/images/run\_metadata\_graph.png) | ![Run metadata info card](../../../../g3doc/images/run\_metadata\_infocard.png) |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |

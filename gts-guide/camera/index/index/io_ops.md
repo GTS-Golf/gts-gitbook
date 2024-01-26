@@ -6,7 +6,7 @@ Note: Functions taking `Tensor` arguments can also take anything accepted by [`t
 
 ## Placeholders
 
-TensorFlow provides a placeholder operation that must be fed with data on execution. For more info, see the section on [Feeding data](../../../sensor/index-1.md#feeding).
+TensorFlow provides a placeholder operation that must be fed with data on execution. For more info, see the section on [Feeding data](../../../sensor/er2/set.md#feeding).
 
 ***
 
@@ -99,7 +99,7 @@ A `SparseTensor` that may be used as a handle for feeding a value, but not evalu
 
 ## Readers
 
-TensorFlow provides a set of Reader classes for reading data formats. For more information on inputs and readers, see [Reading data](../../../sensor/index-1.md).
+TensorFlow provides a set of Reader classes for reading data formats. For more information on inputs and readers, see [Reading data](../../../sensor/er2/set.md).
 
 ***
 
@@ -1044,7 +1044,7 @@ A `Tensor` of type `out_type`. A Tensor with one more dimension than the input `
 
 ### Example protocol buffer
 
-TensorFlow's [recommended format for training examples](../../../sensor/index-1.md#standard-tensorflow-format) is serialized `Example` protocol buffers, [described here](https://www.tensorflow.org/code/tensorflow/core/example/example.proto). They contain `Features`, [described here](https://www.tensorflow.org/code/tensorflow/core/example/feature.proto).
+TensorFlow's [recommended format for training examples](../../../sensor/er2/set.md#standard-tensorflow-format) is serialized `Example` protocol buffers, [described here](https://www.tensorflow.org/code/tensorflow/core/example/example.proto). They contain `Features`, [described here](https://www.tensorflow.org/code/tensorflow/core/example/feature.proto).
 
 ***
 
@@ -1642,7 +1642,7 @@ A `Tensor` of type `string`.
 
 ## Input pipeline
 
-TensorFlow functions for setting up an input-prefetching pipeline. Please see the [reading data how-to](../../../sensor/index-1.md) for context.
+TensorFlow functions for setting up an input-prefetching pipeline. Please see the [reading data how-to](../../../sensor/er2/set.md) for context.
 
 ### Beginning of an input pipeline
 

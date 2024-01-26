@@ -10,7 +10,7 @@ Note: 함수의 `Tensor` 인자는 [`tf.convert_to_tensor`](broken-reference)에
 
 ### `class tf.Variable` <a href="#variable" id="variable"></a>
 
-[Variables How To](../../../sensor/d200.md)에서 자세한 개요를 확인할 수 있습니다.
+[Variables How To](../../../sensor/er2/)에서 자세한 개요를 확인할 수 있습니다.
 
 변수는 graph에서 `run()`의 호출로 상태를 유지합니다. `Variable`의 객체를 만들어 graph에 변수를 추가합니다.
 
@@ -508,7 +508,7 @@ An Op, or None if there are no variables.
 
 Saves and restores variables.
 
-See [Variables](../../../sensor/d200.md) for an overview of variables, saving and restoring.
+See [Variables](../../../sensor/er2/) for an overview of variables, saving and restoring.
 
 The `Saver` class adds ops to save and restore variables to and from _checkpoints_. It also provides convenience methods to run these ops.
 

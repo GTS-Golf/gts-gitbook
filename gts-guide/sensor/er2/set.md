@@ -1,4 +1,4 @@
-# 바닥센서
+# 2 - 1. 센서설정
 
 (v1.0)
 
@@ -162,7 +162,7 @@ An alternative is to use a single reader via the [`tf.train.shuffle_batch` funct
 * If you have more reading threads than input files, to avoid the risk that you will have two threads reading the same example from the same file near each other.
 * Or if reading N files in parallel causes too many disk seeks.
 
-How many threads do you need? the `tf.train.shuffle_batch*` functions add a summary to the graph that indicates how full the example queue is. If you have enough reading threads, that summary will stay above zero. You can [view your summaries as training progresses using TensorBoard](index.md).
+How many threads do you need? the `tf.train.shuffle_batch*` functions add a summary to the graph that indicates how full the example queue is. If you have enough reading threads, that summary will stay above zero. You can [view your summaries as training progresses using TensorBoard](../er1/1-2.md).
 
 ### Creating threads to prefetch using `QueueRunner` objects
 
@@ -202,7 +202,7 @@ sess.close()
 
 First we create the graph. It will have a few pipeline stages that are connected by queues. The first stage will generate filenames to read and enqueue them in the filename queue. The second stage consumes filenames (using a `Reader`), produces examples, and enqueues them in an example queue. Depending on how you have set things up, you may actually have a few independent copies of the second stage, so that you can read from multiple files in parallel. At the end of these stages is an enqueue operation, which enqueues into a queue that the next stage dequeues from. We want to start threads running these enqueuing operations, so that our training loop can dequeue examples from the example queue.
 
-![](../../g3doc/images/AnimatedFileQueues.gif)
+![](../../../g3doc/images/AnimatedFileQueues.gif)
 
 The helpers in `tf.train` that create these queues and enqueuing operations add a [`tf.train.QueueRunner`](broken-reference) to the graph using the [`tf.train.add_queue_runner`](broken-reference) function. Each `QueueRunner` is responsible for one stage, and holds the list of enqueue operations that need to be run in threads. Once the graph is constructed, the [`tf.train.start_queue_runners`](broken-reference) function asks each QueueRunner in the graph to start its threads running the enqueuing operations.
 

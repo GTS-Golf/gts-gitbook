@@ -90,11 +90,11 @@ TensorFlow는 계산능력(Compute Capability)가 3.5 이상인 디바이스만 
 
 #### reader나 queue 사용시 `Sesson.run()`은 왜 멈추는가(Hang)?
 
-[reader](broken-reference)와 [queue](broken-reference) 클래스는 입력(또는 큐의 메모리 공간)이 가능해 질 때 까지 _block_ 할 수 있는 특별한 오퍼레이션을 제공한다. 이러한 오퍼레이션들은 TensorFlow 컴퓨테이션을 다소 많이 복잡하게 하는 비용을 감수 하고서라도, 복잡한 [input pipelines](../sensor/index-1.md)을 만들 수 있도록 한다. 사용법에 대한 더 많은 정보를 원하면 [using `QueueRunner` objects to drive queues and readers](../sensor/index-1.md#creating-threads-to-prefetch-using-queuerunner-objects) 를 참조해라.
+[reader](broken-reference)와 [queue](broken-reference) 클래스는 입력(또는 큐의 메모리 공간)이 가능해 질 때 까지 _block_ 할 수 있는 특별한 오퍼레이션을 제공한다. 이러한 오퍼레이션들은 TensorFlow 컴퓨테이션을 다소 많이 복잡하게 하는 비용을 감수 하고서라도, 복잡한 [input pipelines](../sensor/er2/set.md)을 만들 수 있도록 한다. 사용법에 대한 더 많은 정보를 원하면 [using `QueueRunner` objects to drive queues and readers](../sensor/er2/set.md#creating-threads-to-prefetch-using-queuerunner-objects) 를 참조해라.
 
 ## 변수
 
-[variables](../sensor/d200.md), [variable scopes](broken-reference), [the API documentation for variables](broken-reference) 에 있는 how-to 문서 또한 참조해라.
+[variables](../sensor/er2/), [variable scopes](broken-reference), [the API documentation for variables](broken-reference) 에 있는 how-to 문서 또한 참조해라.
 
 #### 변수의 라이프타임은 무엇인가?
 
@@ -127,13 +127,13 @@ TensorFlow에서, 텐서는 정적 (inferred) 쉐이프와 동적 (true) 쉐이�
 
 * `input`으로 불리는 `Tensor`로 부터 배치 차원을 뽑아내기 위해 [`batch_size = tf.shape(input)[0]`](broken-reference) 을 사용해라. 그리고 `batch_size`로 불리는 `Tensor`에 저장해라.
 * `tf.reduce_sum(...) / batch_size` 대신 [`tf.reduce_mean()`](broken-reference)를 사용해라.
-* [placeholders for feeding input](../sensor/index-1.md#feeding)를 사용 한다면 [`tf.placeholder(..., shape=[None, ...])`](broken-reference) 로 플레이스홀더(placeholder)를 생성해서 변수 배치 차원을 명시 할 수 있다. 쉐이프의 `None` 엘리먼트는 변수 크기 차원에 대응된다.
+* [placeholders for feeding input](../sensor/er2/set.md#feeding)를 사용 한다면 [`tf.placeholder(..., shape=[None, ...])`](broken-reference) 로 플레이스홀더(placeholder)를 생성해서 변수 배치 차원을 명시 할 수 있다. 쉐이프의 `None` 엘리먼트는 변수 크기 차원에 대응된다.
 
 ## TensorBoard
 
 #### TensorFlow 그래프를 어떻게 가시화 할 수 있는가?
 
-[graph visualization tutorial](../sensor/zcam.md)를 참조해라.
+[graph visualization tutorial](../sensor/er1/1-1/)를 참조해라.
 
 #### TensorBoard에 데이터를 보내는 가장 간단한 방법은 무엇인가?
 
@@ -143,7 +143,7 @@ TensorFlow 그래프에 요약 ops를 추가하고, 요약 내용을 로그 디�
 python tensorflow/tensorboard/tensorboard.py --logdir=path/to/log-directory
 ```
 
-보다 자세한 내용은 [Summaries and TensorBoard tutorial](../sensor/index.md) 를 참조해라.
+보다 자세한 내용은 [Summaries and TensorBoard tutorial](../sensor/er1/1-2.md) 를 참조해라.
 
 #### TensorBoard를 띄울 때 마다, 네트워크 보안 팝업이 뜬다.
 
@@ -159,7 +159,7 @@ how-to 문서인 [adding a new operation to TensorFlow](broken-reference) 를 �
 
 쉬운 옵션은 파이썬으로 파싱 코드를 작성해서 데이터를 numpy 배열로 변경하고 [`tf.placeholder()`](broken-reference) 에 그 데이터 텐서를 넣는것이다.
 
-보다 자세한 내용은 [using placeholders for input](../sensor/index-1.md#feeding)를 봐라. 이 접근법은 빨리 만들어서 돌려보기 좋지만, 파싱이 성능 병목이 될 수 있다.
+보다 자세한 내용은 [using placeholders for input](../sensor/er2/set.md#feeding)를 봐라. 이 접근법은 빨리 만들어서 돌려보기 좋지만, 파싱이 성능 병목이 될 수 있다.
 
 보다 효율적인 옵션은 [add a new op written in C++](broken-reference) 를 이용해서 당신의 데이터 포맷을 파싱하는 op를 추가하는 것이다. [guide to handling new data formats](broken-reference)에 이를 처리하는 절차에 대한 더 많은 정보가 있다.
 
