@@ -20,13 +20,13 @@ layout:
 
 만약 기계학습을 처음 배우신다면, 여기서부터 출발하기를 권장드립니다. MNIST라는 손으로 쓰여진 숫자를 분류하는 전통적인 문제에 대해 배워, 다중 분류에 관한 가벼운 입문을 할 수 있습니다.
 
-[튜토리얼 보기](undefined/index.md)
+[튜토리얼 보기](monitor1/monitor1-1.md)
 
 ### MNIST 고급
 
 만약 이미 다른 딥러닝 소프트웨어 패키지와 MNIST에 익숙하시다면, 이 튜토리얼이 텐서플로우에 관한 매우 간단한 시작점이 될 것입니다.
 
-[튜토리얼 보기](undefined/index-1.md)
+[튜토리얼 보기](monitor1/monitor1-2.md)
 
 ### 텐서플로우 구조
 
@@ -46,25 +46,25 @@ MNIST 숫자 데이터셋을 다운로드하는 것에 대한 자세한 사항�
 
 텐서플로우의 고수준 API인 tf.contrib.learn의 간략한 입문입니다. 단 몇 줄의 코드로 신경망을 만들고, 훈련하고, 평가합니다.
 
-[튜토리얼 보기](undefined-1/index.md)
+[튜토리얼 보기](monitor2/index.md)
 
 ### tf.contrib.learn 선형모델 소개
 
 텐서플로우에서 선형 모델을 작업하기 위해서, tf.contrib.learn의 풍부한 도구에 대해 소개합니다.
 
-[튜토리얼 보기](undefined-1/overview.md)
+[튜토리얼 보기](monitor2/overview.md)
 
 ### 선형모델 튜토리얼
 
 이 튜토리얼은 tf.contrib.learn을 이용해 선형 모델을 만드는 코드를 살펴볼 수 있습니다.
 
-[튜토리얼 보기](undefined-1/index-1.md)
+[튜토리얼 보기](monitor2/index-1.md)
 
 ### 와이드앤 딥러닝 튜토리얼
 
 이 튜토리얼은 각 모델의 장점을 결합하기 위해 선형 모델과 딥 신경망을 tf.contrib.learn을 이용해 동시에 학습시키는 방법을 보여줍니다.
 
-[튜토리얼 보기](undefined-1/index-2.md)
+[튜토리얼 보기](monitor2/index-2.md)
 
 ## 텐서플로우 서빙
 

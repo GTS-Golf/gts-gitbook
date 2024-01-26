@@ -104,7 +104,7 @@ TensorBoard는 그래프의 레이아웃을 바꿀 수 있는 몇 가지 방법�
 
 ## Runtime statistics
 
-실행할 때 총 메모리 사용량, 총 계산 시간, 노드의 tensor 형태와 같은 런타임 메타데이터를 수집하면 보통 도움이 됩니다. 아래의 코드 예제는 [simple MNIST tutorial](../../../monitor/undefined/index.md)의 수정본 중 훈련과 테스트 부분에서 발췌한 내용으로 요약과 런타임 통계를 기록하는 부분입니다. 요약을 어떻게 기록하는지는 [Summaries Tutorial](../1-2.md#serializing-the-data)을 보세요. 전체 소스는 [여기](https://www.tensorflow.org/code/tensorflow/examples/tutorials/mnist/mnist\_with\_summaries.py)에 있습니다.
+실행할 때 총 메모리 사용량, 총 계산 시간, 노드의 tensor 형태와 같은 런타임 메타데이터를 수집하면 보통 도움이 됩니다. 아래의 코드 예제는 [simple MNIST tutorial](../../../monitor/monitor1/monitor1-1.md)의 수정본 중 훈련과 테스트 부분에서 발췌한 내용으로 요약과 런타임 통계를 기록하는 부분입니다. 요약을 어떻게 기록하는지는 [Summaries Tutorial](../1-2.md#serializing-the-data)을 보세요. 전체 소스는 [여기](https://www.tensorflow.org/code/tensorflow/examples/tutorials/mnist/mnist\_with\_summaries.py)에 있습니다.
 
 ```python
   # 모델을 트레이닝하고 또한 요약을 작성합니다.
